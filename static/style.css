@@ -1,0 +1,201 @@
+/* ==========================================================================
+   LIFE OS - SOFT PASTEL DESIGN SYSTEM
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. GLOBAL & SCROLLBAR
+   -------------------------------------------------------------------------- */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Premium, unobtrusive custom scrollbar */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+::-webkit-scrollbar-thumb {
+    background: #E2E8F0; /* Soft gray */
+    border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #CBD5E1; /* Slightly darker on hover */
+}
+
+/* Highlight selection matching the brand color */
+::selection {
+    background-color: #4318FF;
+    color: #FFFFFF;
+}
+
+/* --------------------------------------------------------------------------
+   2. CARD COMPONENTS (The "Floating" Neumorphic Look)
+   -------------------------------------------------------------------------- */
+.pastel-card {
+    background-color: #FFFFFF;
+    border-radius: 24px; /* Matches the deeply rounded look of the screenshots */
+    /* This specific shadow formula creates the "floating" ambient light effect */
+    box-shadow: 0px 18px 40px rgba(112, 144, 176, 0.12);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.pastel-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0px 22px 48px rgba(112, 144, 176, 0.18);
+}
+
+/* --------------------------------------------------------------------------
+   3. FORMS & INPUTS (Smooth Floating Labels)
+   -------------------------------------------------------------------------- */
+/* Wrapper for relative positioning */
+.input-group {
+    position: relative;
+    width: 100%;
+}
+
+/* The actual input field */
+.input-pastel {
+    width: 100%;
+    background-color: #F4F7FE; /* Soft canvas background inside inputs */
+    border: 2px solid transparent;
+    border-radius: 16px;
+    padding: 1rem 1.25rem;
+    font-size: 0.875rem;
+    color: #2B3674;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.input-pastel::placeholder {
+    color: transparent; /* Hide default placeholder to use floating label */
+}
+
+.input-pastel:focus {
+    outline: none;
+    border-color: #4318FF;
+    background-color: #FFFFFF;
+    box-shadow: 0 0 0 4px rgba(67, 24, 255, 0.1);
+}
+
+/* The floating label */
+.label-floating {
+    position: absolute;
+    left: 1.25rem;
+    top: 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #A3AED0;
+    pointer-events: none;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Float the label up when input is focused or has content */
+.input-pastel:focus ~ .label-floating,
+.input-pastel:not(:placeholder-shown) ~ .label-floating {
+    top: -0.6rem;
+    left: 1rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #4318FF;
+    background-color: #FFFFFF;
+    padding: 0 0.4rem;
+    border-radius: 4px;
+}
+
+/* Select Dropdowns */
+select.input-pastel {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23A3AED0'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    background-size: 1.2em;
+}
+
+/* --------------------------------------------------------------------------
+   4. BUTTONS
+   -------------------------------------------------------------------------- */
+.btn-primary {
+    background: linear-gradient(135deg, #4318FF 0%, #868CFF 100%);
+    color: #FFFFFF;
+    border-radius: 16px;
+    font-weight: 600;
+    letter-spacing: 0.025em;
+    padding: 0.875rem 1.5rem;
+    transition: all 0.3s ease;
+    box-shadow: 0px 8px 20px rgba(67, 24, 255, 0.25);
+}
+
+.btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0px 12px 24px rgba(67, 24, 255, 0.35);
+}
+
+.btn-primary:active {
+    transform: translateY(1px);
+    box-shadow: 0px 4px 12px rgba(67, 24, 255, 0.2);
+}
+
+/* --------------------------------------------------------------------------
+   5. CUSTOM CHECKBOXES (For Task Manager)
+   -------------------------------------------------------------------------- */
+.checkbox-custom {
+    appearance: none;
+    width: 24px;
+    height: 24px;
+    border: 2px solid #E2E8F0;
+    border-radius: 8px;
+    background-color: #F4F7FE;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.2s ease;
+}
+
+.checkbox-custom:checked {
+    background-color: #4318FF;
+    border-color: #4318FF;
+}
+
+.checkbox-custom:checked::after {
+    content: '';
+    position: absolute;
+    left: 7px;
+    top: 3px;
+    width: 6px;
+    height: 12px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+
+.checkbox-custom:hover:not(:checked) {
+    border-color: #4318FF;
+}
+
+/* --------------------------------------------------------------------------
+   6. ANIMATIONS & UTILITIES
+   -------------------------------------------------------------------------- */
+@keyframes slideUpFade {
+    0% {
+        opacity: 0;
+        transform: translateY(15px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-slide-up {
+    animation: slideUpFade 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Chart Canvas Wrapper - ensures Chart.js respects responsive boundaries */
+.chart-container {
+    position: relative;
+    height: 100%;
+    width: 100%;
+    min-height: 250px;
+}

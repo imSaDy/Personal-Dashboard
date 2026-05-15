@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="flex flex-col md:flex-row md:items-center justify-between mb-8 animate-slide-up" style="animation-delay: 0.1s;">
+    <div>
+        <h2 class="text-3xl font-bold text-textMain tracking-tight">Overview Dashboard</h2>
+        <p class="text-textMuted mt-1 text-sm font-medium">Track your time and analyze your daily focus.</p>
+    </div>
+    
+    <div class="mt-5 md:mt-0">
+        <div class="relative inline-block w-full md:w-auto group">
+            <select id="timeframe-selector" onchange="if(typeof updateSummaryMetrics === 'function') updateSummaryMetrics()" class="appearance-none bg-white border border-gray-100 text-textMain font-bold text-sm px-6 py-3 pr-12 rounded-2xl shadow-sm hover:shadow-card transition-all duration-300 cursor-pointer outline-none focus:ring-4 focus:ring-brand-light w-full">
+                <option value="daily">Daily Report</option>
+                <option value="weekly" selected>Weekly Report</option>
+                <option value="monthly">Monthly Report</option>
+                <option value="yearly">Yearly Report</option>
+            </select>
+            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-textMuted group-hover:text-brand transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M19 9l-7 7-7-7"></path></svg>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 animate-slide-up" style="animation-delay: 0.2s;">
+    
+    <div class="pastel-card p-6 flex items-center justify-between">
+        <div>
+            <p class="text-sm font-bold text-textMuted uppercase tracking-wider mb-1">Total Logged</p>
+            <div class="flex items-end gap-1">
+                <h3 id="metric-total-hours" class="text-3xl font-bold text-textMain">--</h3> 
+                <span class="text-sm font-bold text-textMuted mb-1">hrs</span>
+            </div>
+        </div>
+        <div class="w-14 h-14 rounded-2xl bg-brand-light flex items-center justify-center text-brand">
+            <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+        </div>
+    </div>
+
+    <div class="pastel-card p-6 flex items-center justify-between">
+        <div>
+            <p id="metric-trend-label" class="text-sm font-bold text-textMuted uppercase tracking-wider mb-1">Period Trend</p>
+            <div class="flex items-center gap-2">
+                <h3 id="metric-trend-text" class="text-3xl font-bold text-textMain">--</h3>
+                <span id="metric-trend-badge" class="bg-gray-50 text-textMuted text-xs font-bold px-2 py-1 rounded-md transition-colors duration-300">--</span>
+            </div>
+        </div>
+        <div class="w-14 h-14 rounded-2xl bg-accent-mintLight flex items-center justify-center text-accent-mint">
+            <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
+        </div>
+    </div>
+
+    <div class="pastel-card p-6 flex items-center justify-between">
+        <div>
+            <p class="text-sm font-bold text-textMuted uppercase tracking-wider mb-1">Pending Tasks</p>
+            <h3 id="metric-active-tasks" class="text-3xl font-bold text-textMain">--</h3>
+        </div>
+        <div class="w-14 h-14 rounded-2xl bg-[#FFF5F8] flex items-center justify-center text-accent-pink border border-[#FFEBF0]">
+            <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
+        </div>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 xl:grid-cols-3 gap-8 pb-10">
+    
+    <div class="space-y-8 xl:col-span-1 animate-slide-up" style="animation-delay: 0.3s;">
+        
+        <div class="pastel-card p-8">
+            <div class="flex items-center justify-between mb-8">
+                <h3 class="text-xl font-bold text-textMain">Log Activity</h3>
+                <span class="bg-brand-light text-brand text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-full">Manual Entry</span>
+            </div>
+            
+            <div class="space-y-6">
+                <div class="input-group">
+                    <input type="text" id="activity" class="input-pastel" placeholder=" ">
+                    <label class="label-floating">Activity Name (e.g. Deep Work)</label>
+                </div>
+                
+                <div class="input-group">
+                    <input type="number" id="hours" step="0.5" class="input-pastel" placeholder=" ">
+                    <label class="label-floating">Duration (Hours)</label>
+                </div>
+                
+                <button onclick="submitLog()" class="btn-primary w-full mt-4 flex items-center justify-center gap-3">
+                    <span>Save to Nexus</span>
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                </button>
+                
+                <div id="status-msg" class="text-center text-sm font-bold mt-4 hidden transition-all"></div>
+            </div>
+        </div>
+
+        <div class="pastel-card p-8">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-xl font-bold text-textMain">Recent Logs</h3>
+                <button onclick="if(typeof loadRecentLogs === 'function') loadRecentLogs()" class="text-textMuted hover:text-brand transition-colors p-2 bg-gray-50 rounded-xl hover:bg-brand-light" title="Refresh Data">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                </button>
+            </div>
+            
+            <div id="recent-logs-container" class="space-y-3">
+                <div class="flex items-center justify-between p-4 rounded-2xl bg-gray-50 animate-pulse border border-gray-100/50">
+                    <div class="flex items-center gap-4">
+                        <div class="w-3 h-3 rounded-full bg-gray-200"></div>
+                        <div class="h-4 bg-gray-200 rounded w-24"></div>
+                    </div>
+                    <div class="h-4 bg-gray-200 rounded w-12"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="xl:col-span-2 animate-slide-up" style="animation-delay: 0.4s;">
+        <div class="pastel-card p-8 h-full flex flex-col">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
+                <div>
+                    <h3 class="text-xl font-bold text-textMain">Activity Breakdown</h3>
+                    <p id="chart-subtitle" class="text-sm font-medium text-textMuted mt-1">Hours distributed by sector</p>
+                </div>
+                <button class="flex items-center justify-center gap-2 text-sm font-bold text-brand bg-brand-light px-5 py-2.5 rounded-xl hover:bg-brand hover:text-white transition-all shadow-sm">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                    Export
+                </button>
+            </div>
+            
+            <div class="flex-1 w-full chart-container flex items-center justify-center min-h-[300px]">
+                <canvas id="analyticsChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+<script src="{{ url_for('static', filename='charts.js') }}"></script>
+<script src="{{ url_for('static', filename='history.js') }}"></script>
+{% endblock %}

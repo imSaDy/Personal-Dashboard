@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="flex flex-col md:flex-row md:items-center justify-between mb-8 animate-slide-up" style="animation-delay: 0.1s;">
+    <div>
+        <h2 class="text-3xl font-bold text-textMain tracking-tight">Daily Routines</h2>
+        <p class="text-textMuted mt-1 text-sm font-medium">Build consistency and track your required protocols.</p>
+    </div>
+    
+    <button onclick="openRoutineModal()" class="mt-5 md:mt-0 bg-white border border-gray-100 text-brand font-bold text-sm px-6 py-3 rounded-2xl shadow-sm hover:shadow-card hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-center gap-2 group outline-none focus:ring-4 focus:ring-brand-light">
+        <div class="bg-brand-light text-brand p-1 rounded-lg group-hover:bg-brand group-hover:text-white transition-colors">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4"></path></svg>
+        </div>
+        New Routine
+    </button>
+</div>
+
+<div class="pastel-card p-6 md:p-8 mb-10 animate-slide-up flex flex-col lg:flex-row lg:items-center justify-between gap-6" style="animation-delay: 0.2s;">
+    
+    <div class="flex items-center gap-5">
+        <div class="relative">
+            <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-brand-light to-white flex items-center justify-center shadow-inner border border-white">
+                <svg class="w-8 h-8 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+            </div>
+            <span class="absolute -top-1 -right-1 flex h-4 w-4">
+                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent-orange opacity-75"></span>
+                <span class="relative inline-flex rounded-full h-4 w-4 bg-accent-orange border-2 border-white"></span>
+            </span>
+        </div>
+        
+        <div>
+            <h3 class="text-2xl font-bold text-textMain tracking-tight">Today's Matrix</h3>
+            <p class="text-sm font-medium text-textMuted mt-1">
+                <span id="habit-status-text" class="text-brand font-bold">Syncing data...</span>
+            </p>
+        </div>
+    </div>
+
+    <div class="flex items-center gap-2 lg:ml-auto">
+        <div class="w-11 h-12 rounded-xl bg-gray-50 text-textMuted flex flex-col items-center justify-center font-bold text-xs border border-gray-100">M</div>
+        <div class="w-11 h-12 rounded-xl bg-gray-50 text-textMuted flex flex-col items-center justify-center font-bold text-xs border border-gray-100">T</div>
+        <div class="w-12 h-14 rounded-2xl bg-brand text-white flex flex-col items-center justify-center font-bold text-sm shadow-md transform -translate-y-1">W</div>
+        <div class="w-11 h-12 rounded-xl bg-gray-50 text-textMuted flex flex-col items-center justify-center font-bold text-xs border border-gray-100">T</div>
+        <div class="w-11 h-12 rounded-xl bg-gray-50 text-textMuted flex flex-col items-center justify-center font-bold text-xs border border-gray-100">F</div>
+        <div class="w-11 h-12 rounded-xl bg-gray-50 text-textMuted flex flex-col items-center justify-center font-bold text-xs border border-gray-100 opacity-50">S</div>
+        <div class="w-11 h-12 rounded-xl bg-gray-50 text-textMuted flex flex-col items-center justify-center font-bold text-xs border border-gray-100 opacity-50">S</div>
+    </div>
+</div>
+
+<div class="animate-slide-up" style="animation-delay: 0.3s;">
+    <h3 class="text-sm font-bold text-textMuted uppercase tracking-wider mb-4 pl-2">Active Protocols</h3>
+    
+    <div id="habit-matrix-container" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+        </div>
+</div>
+
+<div id="routine-modal-backdrop" class="fixed inset-0 z-50 flex items-center justify-center bg-textMain/20 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
+    
+    <div id="routine-modal-card" class="pastel-card w-full max-w-md p-8 mx-4 transform scale-95 transition-all duration-300 shadow-2xl border border-white">
+        
+        <div class="flex items-center justify-between mb-6">
+            <h3 class="text-xl font-bold text-textMain flex items-center gap-2">
+                <span class="w-2 h-6 rounded-full bg-brand"></span>
+                Create Routine
+            </h3>
+            <button onclick="closeRoutineModal()" class="text-textMuted hover:text-accent-pink transition-colors p-2 rounded-lg hover:bg-red-50">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+        </div>
+
+        <p class="text-sm font-medium text-textMuted mb-6">Enter the name of the new daily protocol you want to track in your matrix.</p>
+        
+        <div class="space-y-6">
+            <div class="input-group">
+                <input type="text" id="new-routine-name" class="input-pastel" placeholder=" " onkeypress="if(event.key === 'Enter') submitNewRoutine()">
+                <label class="label-floating">Routine Name (e.g. Read 10 Pages)</label>
+            </div>
+            
+            <div class="flex items-center justify-end gap-3 pt-2">
+                <button onclick="closeRoutineModal()" class="px-5 py-3 rounded-xl font-bold text-sm text-textMuted hover:bg-gray-50 hover:text-textMain transition-colors">
+                    Cancel
+                </button>
+                <button onclick="submitNewRoutine()" class="btn-primary px-6 py-3 shadow-sm hover:shadow-md flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4"></path></svg>
+                    Save Routine
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='habits.js') }}"></script>
+{% endblock %}

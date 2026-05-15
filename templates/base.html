@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Life OS // Dashboard</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { 
+                        sans: ['Poppins', 'sans-serif'] 
+                    },
+                    colors: {
+                        /* The Canvas */
+                        canvas: '#F4F7FE',        /* Soft lavender-tinted gray from the images */
+                        surface: '#FFFFFF',       /* Pure white for floating cards */
+                        
+                        /* Typography */
+                        textMain: '#2B3674',      /* Deep navy blue instead of harsh black */
+                        textMuted: '#A3AED0',     /* Soft grayish-blue for secondary text */
+                        
+                        /* The Pastel & Vibrant Accents */
+                        brand: {
+                            DEFAULT: '#4318FF',   /* The vibrant purple/blue from the screenshots */
+                            light: '#F4F1FF',     /* Extremely soft purple for active backgrounds */
+                        },
+                        accent: {
+                            mint: '#05CD99',      /* Soft success green */
+                            mintLight: '#E6FAF5',
+                            pink: '#FFCEE6',      /* Pastel pink for decorative elements */
+                            orange: '#FFDCA8'     /* Pastel orange for decorative elements */
+                        }
+                    },
+                    boxShadow: {
+                        /* The secret to the "floating" neumorphic look is massive, highly transparent shadows */
+                        soft: '0px 18px 40px rgba(112, 144, 176, 0.12)',
+                        card: '0px 10px 30px rgba(43, 54, 116, 0.04)'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-canvas text-textMain font-sans min-h-screen flex antialiased selection:bg-brand selection:text-white overflow-hidden">
+
+    <nav class="w-20 lg:w-[280px] bg-surface border-r border-gray-100 flex flex-col justify-between hidden md:flex z-50 shadow-soft transition-all duration-300">
+        
+        <div class="flex flex-col h-full">
+            <div class="h-24 flex items-center px-8 border-b border-gray-50/50">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-brand to-[#868CFF] flex items-center justify-center shadow-lg shadow-brand/20">
+                        <span class="text-white font-bold text-lg leading-none">OS</span>
+                    </div>
+                    <h1 class="text-2xl font-bold text-textMain tracking-tight hidden lg:block">Nexus</h1>
+                </div>
+            </div>
+            
+            <div class="flex-1 px-4 py-8 overflow-y-auto">
+                <p class="px-4 text-xs font-bold text-textMuted uppercase tracking-wider mb-4 hidden lg:block">Main Menu</p>
+                <ul class="space-y-2">
+                    
+                    <li>
+                        <a href="/" class="flex items-center gap-4 px-4 py-3.5 rounded-xl transition-all duration-200 group relative
+                            {{ 'bg-brand-light text-brand font-semibold' if request.path == '/' else 'text-textMuted hover:bg-gray-50 hover:text-textMain font-medium' }}">
+                            
+                            {% if request.path == '/' %}
+                                <div class="absolute left-0 top-2 bottom-2 w-1 bg-brand rounded-r-full"></div>
+                            {% endif %}
+                            
+                            <svg class="w-6 h-6 transition-colors {{ 'text-brand' if request.path == '/' else 'text-textMuted group-hover:text-brand' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                            </svg>
+                            <span class="hidden lg:block">Overview</span>
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="/habits" class="flex items-center gap-4 px-4 py-3.5 rounded-xl transition-all duration-200 group relative
+                            {{ 'bg-brand-light text-brand font-semibold' if request.path == '/habits' else 'text-textMuted hover:bg-gray-50 hover:text-textMain font-medium' }}">
+                            
+                            {% if request.path == '/habits' %}
+                                <div class="absolute left-0 top-2 bottom-2 w-1 bg-brand rounded-r-full"></div>
+                            {% endif %}
+                            
+                            <svg class="w-6 h-6 transition-colors {{ 'text-brand' if request.path == '/habits' else 'text-textMuted group-hover:text-brand' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span class="hidden lg:block">Daily Habits</span>
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="/tasks" class="flex items-center gap-4 px-4 py-3.5 rounded-xl transition-all duration-200 group relative
+                            {{ 'bg-brand-light text-brand font-semibold' if request.path == '/tasks' else 'text-textMuted hover:bg-gray-50 hover:text-textMain font-medium' }}">
+                            
+                            {% if request.path == '/tasks' %}
+                                <div class="absolute left-0 top-2 bottom-2 w-1 bg-brand rounded-r-full"></div>
+                            {% endif %}
+                            
+                            <svg class="w-6 h-6 transition-colors {{ 'text-brand' if request.path == '/tasks' else 'text-textMuted group-hover:text-brand' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                            </svg>
+                            <span class="hidden lg:block">Task Manager</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            
+            <div class="p-8 border-t border-gray-100 bg-gray-50/50">
+                <div class="flex items-center gap-3 mb-2">
+                    <div class="relative flex h-3 w-3">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent-mint opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-3 w-3 bg-accent-mint"></span>
+                    </div>
+                    <p class="text-xs font-bold text-textMuted uppercase tracking-wider hidden lg:block">System Online</p>
+                </div>
+                <p class="text-textMain text-xl font-bold hidden lg:block tracking-tight" id="digital-clock">00:00</p>
+            </div>
+        </div>
+    </nav>
+
+    <div class="flex-1 flex flex-col relative h-screen overflow-hidden">
+        
+        <header class="h-24 bg-canvas/80 backdrop-blur-md px-8 flex items-center justify-between z-40 sticky top-0">
+            <div class="hidden md:flex items-center bg-surface px-5 py-3 rounded-full shadow-sm w-96 border border-gray-100/50">
+                <svg class="w-5 h-5 text-textMuted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                <input type="text" placeholder="Search data..." class="bg-transparent border-none outline-none ml-3 w-full text-sm font-medium text-textMain placeholder-textMuted">
+            </div>
+
+            <div class="flex items-center gap-6 ml-auto">
+                <button class="text-textMuted hover:text-brand transition-colors relative">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                    </svg>
+                    <span class="absolute top-0 right-0 w-2.5 h-2.5 bg-red-400 border-2 border-canvas rounded-full"></span>
+                </button>
+                
+                <div class="flex items-center gap-3 pl-6 border-l border-gray-200">
+                    <div class="w-10 h-10 rounded-full bg-gradient-to-r from-accent-pink to-accent-orange flex items-center justify-center text-white font-bold shadow-md">
+                        U
+                    </div>
+                    <div class="hidden md:block text-left">
+                        <p class="text-sm font-bold text-textMain leading-tight">User</p>
+                        <p class="text-xs text-textMuted font-medium">Administrator</p>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <main class="flex-1 overflow-y-auto px-6 pb-12 lg:px-10 scroll-smooth">
+            <div class="max-w-7xl mx-auto pt-4">
+                {% block content %}{% endblock %}
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Digital Clock Logic
+        setInterval(() => {
+            const now = new Date();
+            const clockEl = document.getElementById('digital-clock');
+            if(clockEl) clockEl.innerText = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+        }, 1000);
+    </script>
+    
+    {% block scripts %}{% endblock %}
+</body>
+</html>
