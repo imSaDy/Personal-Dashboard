@@ -9,7 +9,6 @@ html {
     scroll-behavior: smooth;
 }
 
-/* Premium, unobtrusive custom scrollbar */
 ::-webkit-scrollbar {
     width: 6px;
     height: 6px;
@@ -18,49 +17,45 @@ html {
     background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-    background: #E2E8F0; /* Soft gray */
+    background: #E2E8F0; 
     border-radius: 10px;
 }
 ::-webkit-scrollbar-thumb:hover {
-    background: #CBD5E1; /* Slightly darker on hover */
+    background: #CBD5E1; 
 }
 
-/* Highlight selection matching the brand color */
 ::selection {
     background-color: #4318FF;
     color: #FFFFFF;
 }
 
 /* --------------------------------------------------------------------------
-   2. CARD COMPONENTS (The "Floating" Neumorphic Look)
+   2. CARD COMPONENTS 
    -------------------------------------------------------------------------- */
 .pastel-card {
     background-color: #FFFFFF;
-    border-radius: 24px; /* Matches the deeply rounded look of the screenshots */
-    /* This specific shadow formula creates the "floating" ambient light effect */
+    border-radius: 24px; 
     box-shadow: 0px 18px 40px rgba(112, 144, 176, 0.12);
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .pastel-card:hover {
     transform: translateY(-2px);
-    box-shadow: 0px 22px 48px rgba(112, 144, 176, 0.18);
+    box-shadow: 0px 24px 50px rgba(112, 144, 176, 0.16);
 }
 
 /* --------------------------------------------------------------------------
-   3. FORMS & INPUTS (Smooth Floating Labels)
+   3. FORMS & INPUTS 
    -------------------------------------------------------------------------- */
-/* Wrapper for relative positioning */
 .input-group {
     position: relative;
     width: 100%;
 }
 
-/* The actual input field */
 .input-pastel {
     width: 100%;
-    background-color: #F4F7FE; /* Soft canvas background inside inputs */
-    border: 2px solid transparent;
+    background-color: #F8FAFC; /* Softer, cooler gray */
+    border: 2px solid #F1F5F9;
     border-radius: 16px;
     padding: 1rem 1.25rem;
     font-size: 0.875rem;
@@ -70,29 +65,27 @@ html {
 }
 
 .input-pastel::placeholder {
-    color: transparent; /* Hide default placeholder to use floating label */
+    color: transparent; 
 }
 
 .input-pastel:focus {
     outline: none;
     border-color: #4318FF;
     background-color: #FFFFFF;
-    box-shadow: 0 0 0 4px rgba(67, 24, 255, 0.1);
+    box-shadow: 0 0 0 4px rgba(67, 24, 255, 0.08);
 }
 
-/* The floating label */
 .label-floating {
     position: absolute;
     left: 1.25rem;
     top: 1rem;
     font-size: 0.875rem;
     font-weight: 500;
-    color: #A3AED0;
+    color: #94A3B8;
     pointer-events: none;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Float the label up when input is focused or has content */
 .input-pastel:focus ~ .label-floating,
 .input-pastel:not(:placeholder-shown) ~ .label-floating {
     top: -0.6rem;
@@ -105,12 +98,11 @@ html {
     border-radius: 4px;
 }
 
-/* Select Dropdowns */
 select.input-pastel {
     appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23A3AED0'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394A3B8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
     background-repeat: no-repeat;
-    background-position: right 1rem center;
+    background-position: right 1.25rem center;
     background-size: 1.2em;
 }
 
@@ -118,19 +110,19 @@ select.input-pastel {
    4. BUTTONS
    -------------------------------------------------------------------------- */
 .btn-primary {
-    background: linear-gradient(135deg, #4318FF 0%, #868CFF 100%);
+    background: linear-gradient(135deg, #4318FF 0%, #7B61FF 100%);
     color: #FFFFFF;
     border-radius: 16px;
     font-weight: 600;
     letter-spacing: 0.025em;
     padding: 0.875rem 1.5rem;
-    transition: all 0.3s ease;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     box-shadow: 0px 8px 20px rgba(67, 24, 255, 0.25);
 }
 
 .btn-primary:hover {
-    transform: translateY(-1px);
-    box-shadow: 0px 12px 24px rgba(67, 24, 255, 0.35);
+    transform: translateY(-2px);
+    box-shadow: 0px 12px 28px rgba(67, 24, 255, 0.35);
 }
 
 .btn-primary:active {
@@ -139,18 +131,18 @@ select.input-pastel {
 }
 
 /* --------------------------------------------------------------------------
-   5. CUSTOM CHECKBOXES (For Task Manager)
+   5. CUSTOM CHECKBOXES
    -------------------------------------------------------------------------- */
 .checkbox-custom {
     appearance: none;
-    width: 24px;
-    height: 24px;
-    border: 2px solid #E2E8F0;
-    border-radius: 8px;
-    background-color: #F4F7FE;
+    width: 22px;
+    height: 22px;
+    border: 2px solid #CBD5E1;
+    border-radius: 6px;
+    background-color: #F8FAFC;
     cursor: pointer;
     position: relative;
-    transition: all 0.2s ease;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .checkbox-custom:checked {
@@ -161,8 +153,8 @@ select.input-pastel {
 .checkbox-custom:checked::after {
     content: '';
     position: absolute;
-    left: 7px;
-    top: 3px;
+    left: 6px;
+    top: 2px;
     width: 6px;
     height: 12px;
     border: solid white;
@@ -171,31 +163,98 @@ select.input-pastel {
 }
 
 .checkbox-custom:hover:not(:checked) {
-    border-color: #4318FF;
+    border-color: #868CFF;
+    background-color: #FFFFFF;
+    box-shadow: 0 0 0 4px rgba(134, 140, 255, 0.1);
 }
 
 /* --------------------------------------------------------------------------
    6. ANIMATIONS & UTILITIES
    -------------------------------------------------------------------------- */
 @keyframes slideUpFade {
-    0% {
-        opacity: 0;
-        transform: translateY(15px);
-    }
-    100% {
-        opacity: 1;
-        transform: translateY(0);
-    }
+    0% { opacity: 0; transform: translateY(20px); }
+    100% { opacity: 1; transform: translateY(0); }
 }
 
 .animate-slide-up {
-    animation: slideUpFade 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    animation: slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-/* Chart Canvas Wrapper - ensures Chart.js respects responsive boundaries */
 .chart-container {
     position: relative;
     height: 100%;
     width: 100%;
     min-height: 250px;
+}
+/* --------------------------------------------------------------------------
+   7. PREMIUM SEMANTIC PRIORITY TAGS (Vibrant "Candy" Palette)
+   -------------------------------------------------------------------------- */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 0.65rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    border: 1px solid transparent;
+}
+
+/* The static dot with a subtle LED glow effect */
+.status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+}
+
+/* High Priority: Vibrant Watermelon */
+.badge-high {
+    background-color: #FFEBF0;
+    color: #FF2E63;
+    border-color: #FFD6E0;
+}
+.badge-high .status-dot { 
+    background-color: #FF2E63; 
+    box-shadow: 0 0 6px rgba(255, 46, 99, 0.4);
+}
+
+/* Medium Priority: Bright Mango Gold */
+.badge-medium {
+    background-color: #FFF7E6;
+    color: #FF9F1C;
+    border-color: #FFEAC2;
+}
+.badge-medium .status-dot { 
+    background-color: #FF9F1C; 
+    box-shadow: 0 0 6px rgba(255, 159, 28, 0.4);
+}
+
+/* Low Priority: Fresh Mint */
+.badge-low {
+    background-color: #E8F9F2;
+    color: #2EC4B6;
+    border-color: #CFF0E6;
+}
+.badge-low .status-dot { 
+    background-color: #2EC4B6; 
+    box-shadow: 0 0 6px rgba(46, 196, 182, 0.4);
+}
+/* --------------------------------------------------------------------------
+   8. ELEVATED ROW HOVER PHYSICS
+   -------------------------------------------------------------------------- */
+.table-row-premium {
+    position: relative;
+    border-radius: 16px;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    background-color: transparent;
+}
+
+/* Subtle background glow and physical "lift" on hover */
+.table-row-premium:hover {
+    background-color: #FFFFFF;
+    transform: translateY(-2px) scale(1.005);
+    box-shadow: 0px 10px 30px rgba(112, 144, 176, 0.08);
+    z-index: 10; /* Ensures the lifted row sits above others */
 }

@@ -12,7 +12,6 @@ def get_connection():
 def init_db():
     conn = get_connection()
     
-    # 1. Chronos Tracker (Time Logs)
     conn.execute('''
         CREATE TABLE IF NOT EXISTS time_logs (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -22,7 +21,6 @@ def init_db():
         )
     ''')
     
-    # 2. Task / Bounty Board
     conn.execute('''
         CREATE TABLE IF NOT EXISTS tasks (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -33,7 +31,6 @@ def init_db():
         )
     ''')
     
-    # 3. Habit Matrix List
     conn.execute('''
         CREATE TABLE IF NOT EXISTS habits (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -41,7 +38,6 @@ def init_db():
         )
     ''')
     
-    # 4. Habit Matrix Daily Logs
     conn.execute('''
         CREATE TABLE IF NOT EXISTS habit_logs (
             habit_id INTEGER,
@@ -50,7 +46,6 @@ def init_db():
         )
     ''')
     
-    # Inject standard routines if the table is empty (Removed Cyberpunk defaults)
     cursor = conn.execute('SELECT COUNT(*) FROM habits')
     if cursor.fetchone()[0] == 0:
         conn.execute('INSERT INTO habits (name) VALUES ("Morning Review"), ("Daily Exercise"), ("Deep Work")')
@@ -62,7 +57,6 @@ def init_db():
 def get_dashboard_metrics(timeframe='weekly'):
     conn = get_connection()
     
-    # Determine SQL date modifiers based on timeframe
     if timeframe == 'daily':
         date_mod = '-1 days'
         prev_mod = '-2 days'
@@ -72,26 +66,22 @@ def get_dashboard_metrics(timeframe='weekly'):
     elif timeframe == 'yearly':
         date_mod = '-365 days'
         prev_mod = '-730 days'
-    else: # default weekly
+    else: 
         date_mod = '-7 days'
         prev_mod = '-14 days'
 
-    # Current Period Total Hours
     cursor = conn.execute(f"SELECT SUM(hours) as total FROM time_logs WHERE date >= date('now', '{date_mod}', 'localtime')")
     current_hours = cursor.fetchone()['total'] or 0.0
 
-    # Previous Period Total Hours (For the Trend calculation)
     cursor = conn.execute(f"SELECT SUM(hours) as total FROM time_logs WHERE date >= date('now', '{prev_mod}', 'localtime') AND date < date('now', '{date_mod}', 'localtime')")
     prev_hours = cursor.fetchone()['total'] or 0.0
 
-    # Calculate Trend Percentage
     trend = 0
     if prev_hours > 0:
         trend = round(((current_hours - prev_hours) / prev_hours) * 100)
     elif current_hours > 0:
-        trend = 100 # Infinite growth if previous was 0 and current is > 0
+        trend = 100 
 
-    # Active Tasks Count
     cursor = conn.execute("SELECT COUNT(*) as count FROM tasks WHERE status != 'Completed'")
     active_tasks = cursor.fetchone()['count']
     
@@ -113,15 +103,11 @@ def add_log(activity, hours):
 def get_activity_totals(timeframe='weekly'):
     conn = get_connection()
     
-    # Filter chart data by timeframe
-    if timeframe == 'daily':
-        date_mod = '-1 days'
-    elif timeframe == 'monthly':
-        date_mod = '-30 days'
-    elif timeframe == 'yearly':
-        date_mod = '-365 days'
-    else:
-        date_mod = '-7 days'
+    # 1. Raw totals for Bar and Doughnut charts
+    if timeframe == 'daily': date_mod = '-1 days'
+    elif timeframe == 'monthly': date_mod = '-30 days'
+    elif timeframe == 'yearly': date_mod = '-365 days'
+    else: date_mod = '-7 days'
 
     cursor = conn.execute(f'''
         SELECT activity, SUM(hours) as total_hours 
@@ -129,9 +115,51 @@ def get_activity_totals(timeframe='weekly'):
         WHERE date >= date('now', '{date_mod}', 'localtime')
         GROUP BY activity
     ''')
-    results = [{"activity": row["activity"], "total_hours": row["total_hours"]} for row in cursor.fetchall()]
+    totals = [{"activity": row["activity"], "total_hours": row["total_hours"]} for row in cursor.fetchall()]
+
+    # 2. Timeline totals for the Smooth Line chart (Total hours per period)
+    if timeframe == 'daily':
+        timeline_query = f'''
+            SELECT strftime('%H', date) as period, SUM(hours) as total_hours
+            FROM time_logs
+            WHERE date >= datetime('now', '-24 hours', 'localtime')
+            GROUP BY period
+            ORDER BY period ASC
+        '''
+    elif timeframe == 'monthly':
+        timeline_query = f'''
+            SELECT strftime('%Y-%W', date) as period, SUM(hours) as total_hours
+            FROM time_logs
+            WHERE date >= date('now', '-27 days', 'localtime')
+            GROUP BY period
+            ORDER BY period ASC
+        '''
+    elif timeframe == 'yearly':
+        timeline_query = f'''
+            SELECT strftime('%Y-%m', date) as period, SUM(hours) as total_hours
+            FROM time_logs
+            WHERE date >= date('now', '-11 months', 'localtime')
+            GROUP BY period
+            ORDER BY period ASC
+        '''
+    else: 
+        timeline_query = f'''
+            SELECT date(date) as period, SUM(hours) as total_hours
+            FROM time_logs
+            WHERE date >= date('now', '-6 days', 'localtime')
+            GROUP BY period
+            ORDER BY period ASC
+        '''
+
+    cursor = conn.execute(timeline_query)
+    timeline = [{"period": row["period"], "total_hours": row["total_hours"]} for row in cursor.fetchall()]
+
     conn.close()
-    return results
+    
+    return {
+        "totals": totals,
+        "timeline": timeline
+    }
 
 def get_recent_logs(limit=5):
     conn = get_connection()
@@ -143,6 +171,12 @@ def get_recent_logs(limit=5):
 def delete_log(log_id):
     conn = get_connection()
     conn.execute('DELETE FROM time_logs WHERE id = ?', (log_id,))
+    conn.commit()
+    conn.close()
+
+def edit_time_log(log_id, activity, hours):
+    conn = get_connection()
+    conn.execute('UPDATE time_logs SET activity = ?, hours = ? WHERE id = ?', (activity, hours, log_id))
     conn.commit()
     conn.close()
 
@@ -159,6 +193,59 @@ def get_today_habits():
     conn.close()
     return results
 
+# NEW: 7-Day Routine Report
+def get_routine_report():
+    conn = get_connection()
+    
+    # 1. Total active routines currently in the database
+    cursor = conn.execute('SELECT COUNT(*) as count FROM habits')
+    total_routines = cursor.fetchone()['count']
+    
+    if total_routines == 0:
+        conn.close()
+        return {"score": 0, "days": []}
+        
+    # 2. Get completions grouped by date for the last 7 days
+    cursor = conn.execute('''
+        SELECT log_date, COUNT(habit_id) as completions
+        FROM habit_logs
+        WHERE log_date >= date('now', '-6 days', 'localtime')
+        GROUP BY log_date
+    ''')
+    completions_map = {row['log_date']: row['completions'] for row in cursor.fetchall()}
+    
+    # 3. Build the 7-day array, filling in days with 0 if no routines were completed
+    days = []
+    total_completions_week = 0
+    
+    for i in range(6, -1, -1):
+        date_obj = datetime.now() - timedelta(days=i)
+        date_str = date_obj.strftime('%Y-%m-%d')
+        day_name = date_obj.strftime('%a') # Returns 'Mon', 'Tue', etc.
+        
+        daily_completed = completions_map.get(date_str, 0)
+        total_completions_week += daily_completed
+        
+        percentage = round((daily_completed / total_routines) * 100)
+        
+        days.append({
+            "date": date_str,
+            "day_name": day_name,
+            "completed": daily_completed,
+            "total": total_routines,
+            "percentage": percentage
+        })
+        
+    # Calculate the overall score out of 100%
+    overall_score = round((total_completions_week / (total_routines * 7)) * 100)
+    
+    conn.close()
+    
+    return {
+        "score": overall_score,
+        "days": days
+    }
+
 def toggle_habit(habit_id):
     conn = get_connection()
     cursor = conn.execute('SELECT 1 FROM habit_logs WHERE habit_id = ? AND log_date = date("now", "localtime")', (habit_id,))
@@ -172,6 +259,19 @@ def toggle_habit(habit_id):
 def add_habit(name):
     conn = get_connection()
     conn.execute('INSERT INTO habits (name) VALUES (?)', (name,))
+    conn.commit()
+    conn.close()
+
+def edit_habit(habit_id, name):
+    conn = get_connection()
+    conn.execute('UPDATE habits SET name = ? WHERE id = ?', (name, habit_id))
+    conn.commit()
+    conn.close()
+
+def delete_habit(habit_id):
+    conn = get_connection()
+    conn.execute('DELETE FROM habits WHERE id = ?', (habit_id,))
+    conn.execute('DELETE FROM habit_logs WHERE habit_id = ?', (habit_id,))
     conn.commit()
     conn.close()
 
@@ -202,5 +302,11 @@ def toggle_task_status(task_id):
 def delete_task(task_id):
     conn = get_connection()
     conn.execute('DELETE FROM tasks WHERE id = ?', (task_id,))
+    conn.commit()
+    conn.close()
+
+def edit_task(task_id, title, deadline, priority):
+    conn = get_connection()
+    conn.execute('UPDATE tasks SET title = ?, deadline = ?, priority = ? WHERE id = ?', (title, deadline, priority, task_id))
     conn.commit()
     conn.close()

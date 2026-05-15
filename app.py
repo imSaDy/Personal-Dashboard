@@ -19,15 +19,13 @@ def habits_page():
 def tasks_page():
     return render_template('tasks.html')
 
-# --- DASHBOARD METRICS ROUTE ---
+# --- DASHBOARD METRICS & ANALYTICS ---
 @app.route('/api/metrics', methods=['GET'])
 def get_metrics():
-    # Expects ?timeframe=weekly, daily, monthly, etc. Defaults to weekly.
     timeframe = request.args.get('timeframe', 'weekly')
     data = database.get_dashboard_metrics(timeframe)
     return jsonify(data)
 
-# --- ANALYTICS ROUTE (With Timeframe filtering) ---
 @app.route('/api/analytics', methods=['GET'])
 def get_analytics():
     timeframe = request.args.get('timeframe', 'weekly')
@@ -51,23 +49,44 @@ def delete_time_log(log_id):
     database.delete_log(log_id)
     return jsonify({"status": "success", "message": "Log purged."})
 
-# --- ROUTINE/HABIT API ROUTES ---
+@app.route('/api/logs/<int:log_id>', methods=['PUT'])
+def update_time_log(log_id):
+    data = request.get_json()
+    database.edit_time_log(log_id, data.get('activity'), data.get('hours'))
+    return jsonify({"status": "success"})
+
+# --- HABIT / ROUTINE API ROUTES ---
 @app.route('/api/habits', methods=['GET', 'POST'])
 def handle_habits():
-    # POST handles the "New Routine" button creation
     if request.method == 'POST':
         data = request.get_json()
         database.add_habit(data.get('name'))
         return jsonify({"status": "success"})
-    
-    # GET handles loading the daily matrix
     return jsonify(database.get_today_habits())
+
+# NEW: Route to fetch the 7-day consistency report
+@app.route('/api/habits/report', methods=['GET'])
+def get_habit_report():
+    data = database.get_routine_report()
+    return jsonify(data)
 
 @app.route('/api/habits/toggle', methods=['POST'])
 def toggle_habit():
     data = request.get_json()
     database.toggle_habit(data.get('habit_id'))
     return jsonify({"status": "success"})
+
+@app.route('/api/habits/<int:habit_id>', methods=['PUT'])
+def update_habit(habit_id):
+    data = request.get_json()
+    database.edit_habit(habit_id, data.get('name'))
+    return jsonify({"status": "success"})
+
+@app.route('/api/habits/<int:habit_id>', methods=['DELETE'])
+def delete_habit_route(habit_id):
+    database.delete_habit(habit_id)
+    return jsonify({"status": "success"})
+
 
 # --- TASK API ROUTES ---
 @app.route('/api/tasks', methods=['GET', 'POST'])
@@ -86,6 +105,12 @@ def toggle_task(task_id):
 @app.route('/api/tasks/<int:task_id>', methods=['DELETE'])
 def delete_task_route(task_id):
     database.delete_task(task_id)
+    return jsonify({"status": "success"})
+
+@app.route('/api/tasks/<int:task_id>', methods=['PUT'])
+def update_task_route(task_id):
+    data = request.get_json()
+    database.edit_task(task_id, data.get('title'), data.get('deadline'), data.get('priority'))
     return jsonify({"status": "success"})
 
 if __name__ == '__main__':
