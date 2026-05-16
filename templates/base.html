@@ -117,6 +117,21 @@
                             <span class="hidden lg:block">Task Manager</span>
                         </a>
                     </li>
+                    <li>
+                        <a href="/timer" class="flex items-center gap-4 px-4 py-3.5 rounded-xl transition-all duration-200 group relative
+                            {{ 'bg-brand-light text-brand font-semibold' if request.path == '/timer' else 'text-textMuted hover:bg-gray-50 hover:text-textMain font-medium' }}">
+                            
+                            {% if request.path == '/timer' %}
+                                <div class="absolute left-0 top-2 bottom-2 w-1 bg-brand rounded-r-full"></div>
+                            {% endif %}
+                            
+                            <svg class="w-6 h-6 transition-colors {{ 'text-brand' if request.path == '/timer' else 'text-textMuted group-hover:text-brand' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32l1.41 1.41M2 12h2m16 0h2M4.93 19.07l1.41-1.41m11.32-11.32l1.41-1.41" />
+                            </svg>
+                            <span class="hidden lg:block">Focus Timer</span>
+                        </a>
+                    </li>
                 </ul>
             </div>
             

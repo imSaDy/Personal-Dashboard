@@ -19,6 +19,11 @@ def habits_page():
 def tasks_page():
     return render_template('tasks.html')
 
+# NEW: The missing Timer Route!
+@app.route('/timer')
+def timer_page():
+    return render_template('timer.html')
+
 # --- DASHBOARD METRICS & ANALYTICS ---
 @app.route('/api/metrics', methods=['GET'])
 def get_metrics():
@@ -64,7 +69,6 @@ def handle_habits():
         return jsonify({"status": "success"})
     return jsonify(database.get_today_habits())
 
-# NEW: Route to fetch the 7-day consistency report
 @app.route('/api/habits/report', methods=['GET'])
 def get_habit_report():
     data = database.get_routine_report()
@@ -86,7 +90,6 @@ def update_habit(habit_id):
 def delete_habit_route(habit_id):
     database.delete_habit(habit_id)
     return jsonify({"status": "success"})
-
 
 # --- TASK API ROUTES ---
 @app.route('/api/tasks', methods=['GET', 'POST'])

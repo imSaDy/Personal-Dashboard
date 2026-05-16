@@ -1,5 +1,5 @@
 /* ==========================================================================
-   LIFE OS - RECENT ACTIVITY LOGIC (history.js)
+   LUMEN - RECENT ACTIVITY LOGIC (history.js)
    ========================================================================== */
 
 let currentLogsData = []; // Store globally to populate the edit modal easily
@@ -78,36 +78,38 @@ async function loadRecentLogs() {
             const animationDelay = `${(index * 0.05) + 0.1}s`;
             
             const logRow = document.createElement('div');
-            logRow.className = `flex items-center justify-between p-4 rounded-2xl bg-white border border-transparent hover:border-gray-100 hover:bg-gray-50/80 transition-all duration-300 group shadow-sm hover:shadow-md mb-3 animate-slide-up`;
+            logRow.className = `flex items-center w-full mb-3 animate-slide-up group`;
             logRow.id = `log-entry-${log.id}`;
             logRow.style.animationFillMode = 'both';
             logRow.style.animationDelay = animationDelay;
             
             logRow.innerHTML = `
-                <div class="flex items-center gap-4">
-                    <div class="w-10 h-10 rounded-xl ${colorClass} flex items-center justify-center font-bold text-sm shadow-sm flex-shrink-0">
-                        ${log.activity.charAt(0).toUpperCase()}
+                <div class="flex-1 flex items-center justify-between p-4 rounded-2xl bg-white border border-transparent group-hover:border-gray-100 transition-all duration-1000 ease-in-out transform-gpu shadow-sm min-w-0 z-10 relative">
+                    <div class="flex items-center gap-3 sm:gap-4 flex-1 min-w-0 pr-3">
+                        <div class="w-10 h-10 rounded-xl ${colorClass} flex items-center justify-center font-bold text-sm shadow-sm flex-shrink-0">
+                            ${log.activity.charAt(0).toUpperCase()}
+                        </div>
+                        
+                        <div class="min-w-0 flex-1">
+                            <p class="text-sm font-bold text-textMain tracking-tight truncate block w-full">${log.activity}</p>
+                            <p class="text-[11px] font-semibold text-textMuted uppercase tracking-wider mt-0.5">${formattedDate}</p>
+                        </div>
                     </div>
                     
-                    <div class="min-w-0">
-                        <p class="text-sm font-bold text-textMain tracking-tight truncate">${log.activity}</p>
-                        <p class="text-[11px] font-semibold text-textMuted uppercase tracking-wider mt-0.5">${formattedDate}</p>
+                    <div class="flex-shrink-0">
+                        <div class="bg-surface px-3 py-1.5 rounded-lg border border-gray-100 shadow-sm text-sm font-bold text-brand">
+                            ${log.hours} ${hourLabel}
+                        </div>
                     </div>
                 </div>
-                
-                <div class="flex items-center gap-4">
-                    <div class="bg-surface px-3 py-1 rounded-lg border border-gray-100 shadow-sm text-sm font-bold text-brand">
-                        ${log.hours} ${hourLabel}
-                    </div>
-                    
-                    <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                        <button onclick="openEditLogModal(${log.id})" class="p-2 bg-white border border-gray-100 text-textMuted hover:text-brand hover:bg-brand-light rounded-lg shadow-sm transition-colors outline-none" title="Edit Log">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
-                        </button>
-                        <button onclick="openDeleteModal(${log.id})" class="p-2 bg-white border border-gray-100 text-textMuted hover:text-red-500 hover:bg-red-50 rounded-lg shadow-sm transition-colors outline-none" title="Delete Entry">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                        </button>
-                    </div>
+
+                <div class="flex items-center gap-1.5 overflow-hidden transition-all duration-1000 ease-in-out transform-gpu max-w-0 opacity-0 group-hover:max-w-[120px] group-hover:opacity-100 group-hover:ml-2 flex-shrink-0">
+                    <button onclick="openEditLogModal(${log.id})" class="p-2 bg-white border border-gray-100 text-textMuted hover:text-brand hover:bg-brand-light rounded-xl shadow-sm transition-colors outline-none flex-shrink-0 flex items-center justify-center" title="Edit Log">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                    </button>
+                    <button onclick="openDeleteModal(${log.id})" class="p-2 bg-white border border-gray-100 text-textMuted hover:text-red-500 hover:bg-red-50 rounded-xl shadow-sm transition-colors outline-none flex-shrink-0 flex items-center justify-center" title="Delete Entry">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                    </button>
                 </div>
             `;
             
@@ -224,7 +226,6 @@ async function executeDeleteLog() {
     const id = document.getElementById('delete-target-id').value;
     if (!id) return;
 
-    // FIX: Look for the new red button class instead of the old pink one
     const submitBtn = document.querySelector('#delete-modal-card .bg-red-500');
     const originalHTML = submitBtn.innerHTML;
     submitBtn.disabled = true;
