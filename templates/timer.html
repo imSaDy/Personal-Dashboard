@@ -12,9 +12,9 @@
     <div class="pastel-card p-10 md:p-14 w-full max-w-lg flex flex-col items-center relative overflow-hidden">
         
         <div class="flex items-center gap-2 bg-gray-50 p-1.5 rounded-2xl mb-10 border border-gray-100 z-10">
-            <button id="btn-mode-work" onclick="setTimerMode('work', 25)" class="px-5 py-2 rounded-xl text-sm font-bold transition-all bg-white shadow-sm text-brand pointer-events-none">Deep Work</button>
-            <button id="btn-mode-short" onclick="setTimerMode('short', 5)" class="px-5 py-2 rounded-xl text-sm font-bold transition-all text-textMuted hover:text-textMain">Short Break</button>
-            <button id="btn-mode-long" onclick="setTimerMode('long', 15)" class="px-5 py-2 rounded-xl text-sm font-bold transition-all text-textMuted hover:text-textMain">Long Break</button>
+            <button id="btn-mode-work" onclick="setTimerMode('work', 60)" class="px-5 py-2 rounded-xl text-sm font-bold transition-all bg-white shadow-sm text-brand pointer-events-none">Deep Work</button>
+            <button id="btn-mode-short" onclick="setTimerMode('short', 15)" class="px-5 py-2 rounded-xl text-sm font-bold transition-all text-textMuted hover:text-textMain">Short Break</button>
+            <button id="btn-mode-long" onclick="setTimerMode('long', 30)" class="px-5 py-2 rounded-xl text-sm font-bold transition-all text-textMuted hover:text-textMain">Long Break</button>
         </div>
 
         <div class="relative w-64 h-64 flex items-center justify-center mb-10 z-10">
@@ -26,7 +26,7 @@
             </svg>
             
             <div class="text-center relative group">
-                <h1 id="timer-display" onclick="openCustomTimeModal()" class="text-6xl font-black text-textMain tracking-tighter tabular-nums cursor-pointer hover:text-brand transition-colors relative z-10" title="Click to adjust time">25:00</h1>
+                <h1 id="timer-display" onclick="openCustomTimeModal()" class="text-6xl font-black text-textMain tracking-tighter tabular-nums cursor-pointer hover:text-brand transition-colors relative z-10" title="Click to adjust time">60:00</h1>
                 
                 <div class="absolute -right-6 top-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none text-textMuted">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>

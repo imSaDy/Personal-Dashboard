@@ -41,8 +41,7 @@ def init_db():
     conn.execute('''
         CREATE TABLE IF NOT EXISTS habit_logs (
             habit_id INTEGER,
-            log_date DATE DEFAULT (date('now', 'localtime')),
-            PRIMARY KEY (habit_id, log_date)
+            log_date DATE DEFAULT (date('now', 'localtime'))
         )
     ''')
     
@@ -57,9 +56,10 @@ def init_db():
 def get_dashboard_metrics(timeframe='weekly'):
     conn = get_connection()
     
+    # FIXED: '0 days' locks it exactly to midnight today, no rolling hours.
     if timeframe == 'daily':
-        date_mod = '-1 days'
-        prev_mod = '-2 days'
+        date_mod = '0 days'
+        prev_mod = '-1 days'
     elif timeframe == 'monthly':
         date_mod = '-30 days'
         prev_mod = '-60 days'
@@ -104,7 +104,7 @@ def get_activity_totals(timeframe='weekly'):
     conn = get_connection()
     
     # 1. Raw totals for Bar and Doughnut charts
-    if timeframe == 'daily': date_mod = '-1 days'
+    if timeframe == 'daily': date_mod = '0 days' # FIXED
     elif timeframe == 'monthly': date_mod = '-30 days'
     elif timeframe == 'yearly': date_mod = '-365 days'
     else: date_mod = '-7 days'
@@ -117,12 +117,13 @@ def get_activity_totals(timeframe='weekly'):
     ''')
     totals = [{"activity": row["activity"], "total_hours": row["total_hours"]} for row in cursor.fetchall()]
 
-    # 2. Timeline totals for the Smooth Line chart (Total hours per period)
+    # 2. Timeline totals for the Smooth Line chart
+    # FIXED: Replaced datetime('-24 hours') with date('now') to lock it to calendar midnight
     if timeframe == 'daily':
         timeline_query = f'''
             SELECT strftime('%H', date) as period, SUM(hours) as total_hours
             FROM time_logs
-            WHERE date >= datetime('now', '-24 hours', 'localtime')
+            WHERE date >= date('now', 'localtime')
             GROUP BY period
             ORDER BY period ASC
         '''
@@ -193,11 +194,9 @@ def get_today_habits():
     conn.close()
     return results
 
-# NEW: 7-Day Routine Report
 def get_routine_report():
     conn = get_connection()
     
-    # 1. Total active routines currently in the database
     cursor = conn.execute('SELECT COUNT(*) as count FROM habits')
     total_routines = cursor.fetchone()['count']
     
@@ -205,7 +204,6 @@ def get_routine_report():
         conn.close()
         return {"score": 0, "days": []}
         
-    # 2. Get completions grouped by date for the last 7 days
     cursor = conn.execute('''
         SELECT log_date, COUNT(habit_id) as completions
         FROM habit_logs
@@ -214,14 +212,13 @@ def get_routine_report():
     ''')
     completions_map = {row['log_date']: row['completions'] for row in cursor.fetchall()}
     
-    # 3. Build the 7-day array, filling in days with 0 if no routines were completed
     days = []
     total_completions_week = 0
     
     for i in range(6, -1, -1):
         date_obj = datetime.now() - timedelta(days=i)
         date_str = date_obj.strftime('%Y-%m-%d')
-        day_name = date_obj.strftime('%a') # Returns 'Mon', 'Tue', etc.
+        day_name = date_obj.strftime('%a') 
         
         daily_completed = completions_map.get(date_str, 0)
         total_completions_week += daily_completed
@@ -236,7 +233,6 @@ def get_routine_report():
             "percentage": percentage
         })
         
-    # Calculate the overall score out of 100%
     overall_score = round((total_completions_week / (total_routines * 7)) * 100)
     
     conn.close()

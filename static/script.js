@@ -1,10 +1,94 @@
 /* ==========================================================================
-   LIFE OS - CORE APPLICATION LOGIC (script.js)
+   LUMEN - CORE APPLICATION LOGIC (script.js)
    ========================================================================== */
 
-/**
- * Handles the main submission for logging new time and activities.
- */
+/* ==========================================================================
+   CUSTOM DROPDOWN LOGIC
+   ========================================================================== */
+
+function toggleDropdown() {
+    const menu = document.getElementById('dropdown-menu');
+    const arrow = document.getElementById('dropdown-arrow');
+    
+    if (menu.classList.contains('opacity-0')) {
+        // Open Menu
+        menu.classList.remove('opacity-0', 'invisible', '-translate-y-2');
+        arrow.style.transform = 'rotate(180deg)';
+    } else {
+        // Close Menu
+        closeDropdown();
+    }
+}
+
+function closeDropdown() {
+    const menu = document.getElementById('dropdown-menu');
+    const arrow = document.getElementById('dropdown-arrow');
+    
+    if (menu && !menu.classList.contains('opacity-0')) {
+        menu.classList.add('opacity-0', 'invisible', '-translate-y-2');
+        if (arrow) arrow.style.transform = 'rotate(0deg)';
+    }
+}
+
+function selectTimeframe(value, label) {
+    // 1. Update the hidden input value
+    const input = document.getElementById('timeframe-selector');
+    if (input) input.value = value;
+    
+    // 2. Update the visible button text
+    const textSpan = document.getElementById('dropdown-selected-text');
+    if (textSpan) textSpan.innerText = label;
+
+    // 3. Update the visual active states AND clone the icon
+    const selectedIconContainer = document.getElementById('dropdown-selected-icon');
+
+    document.querySelectorAll('.dropdown-item').forEach(btn => {
+        // Find the specific icons inside this row
+        const iconContainer = btn.querySelector('div svg'); 
+        const check = btn.querySelector('.check-icon');
+        
+        if (btn.getAttribute('data-value') === value) {
+            // -- THIS IS THE SELECTED ROW --
+            btn.className = 'dropdown-item w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-bold text-brand bg-brand-light transition-all mb-1 group';
+            iconContainer.className = 'w-4 h-4 opacity-100';
+            check.className = 'w-4 h-4 text-brand opacity-100 check-icon transition-opacity';
+            
+            // Clone the icon, scale it to w-5 h-5, and put it in the main button
+            if (selectedIconContainer) {
+                const clonedSVG = iconContainer.cloneNode(true);
+                clonedSVG.className = 'w-5 h-5';
+                selectedIconContainer.innerHTML = '';
+                selectedIconContainer.appendChild(clonedSVG);
+            }
+        } else {
+            // -- THIS ROW IS NOT SELECTED --
+            btn.className = 'dropdown-item w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-bold text-textMuted hover:text-brand hover:bg-brand-light transition-all mb-1 group';
+            iconContainer.className = 'w-4 h-4 opacity-70 group-hover:opacity-100 transition-opacity';
+            check.className = 'w-4 h-4 text-brand opacity-0 check-icon transition-opacity';
+        }
+    });
+    
+    // 4. Close the menu
+    closeDropdown();
+    
+    // 5. Trigger the backend metric update
+    if (typeof updateSummaryMetrics === 'function') {
+        updateSummaryMetrics();
+    }
+}
+
+// Global click listener: Close the dropdown if the user clicks anywhere outside of it
+document.addEventListener('click', (event) => {
+    const container = document.getElementById('custom-dropdown-container');
+    if (container && !container.contains(event.target)) {
+        closeDropdown();
+    }
+});
+
+/* ==========================================================================
+   LOG ENTRY FORM LOGIC
+   ========================================================================== */
+
 async function submitLog() {
     const activityInput = document.getElementById('activity');
     const hoursInput = document.getElementById('hours');
@@ -14,7 +98,6 @@ async function submitLog() {
     const activity = activityInput.value.trim();
     const hours = parseFloat(hoursInput.value);
 
-    // Premium Client-Side Validation
     if (!activity) {
         showStatusMessage("Please enter an activity name.", 'error');
         activityInput.focus();
@@ -32,7 +115,6 @@ async function submitLog() {
         return;
     }
 
-    // Set Loading State
     submitBtn.disabled = true;
     submitBtn.style.opacity = '0.7';
     submitBtn.innerHTML = `
@@ -60,11 +142,8 @@ async function submitLog() {
             activityInput.blur();
             hoursInput.blur();
 
-            // Refresh UI components
             if (typeof loadRecentLogs === "function") loadRecentLogs();
             if (typeof loadChartData === "function") loadChartData();
-            
-            // Instantly update top metrics
             updateSummaryMetrics();
         } else {
             showStatusMessage("Failed to save entry. Please try again.", 'error');
@@ -79,9 +158,6 @@ async function submitLog() {
     }
 }
 
-/**
- * A reusable helper function to display smooth status messages under the form.
- */
 function showStatusMessage(message, type = 'success') {
     const statusMsg = document.getElementById('status-msg');
     
@@ -108,15 +184,12 @@ function showStatusMessage(message, type = 'success') {
    DASHBOARD METRICS LOGIC
    ========================================================================== */
 
-/**
- * Animates a number from a start value to an end value for a premium SaaS feel.
- */
 function animateValue(obj, start, end, duration, isFloat = false) {
     let startTimestamp = null;
     const step = (timestamp) => {
         if (!startTimestamp) startTimestamp = timestamp;
         const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-        const easeOut = 1 - Math.pow(1 - progress, 4); // Smooth deceleration
+        const easeOut = 1 - Math.pow(1 - progress, 4); 
         const current = easeOut * (end - start) + start;
         
         obj.innerHTML = isFloat ? current.toFixed(1) : Math.floor(current);
@@ -130,37 +203,28 @@ function animateValue(obj, start, end, duration, isFloat = false) {
     window.requestAnimationFrame(step);
 }
 
-/**
- * Fetches the top-level aggregates from the database based on the selected timeframe.
- */
 async function updateSummaryMetrics() {
-    // 1. Get the timeframe from the dropdown (defaults to weekly if it doesn't exist)
     const selector = document.getElementById('timeframe-selector');
     const timeframe = selector ? selector.value : 'weekly';
 
     try {
-        // 2. Fetch the data from our new Python API route
         const response = await fetch(`/api/metrics?timeframe=${timeframe}`);
         if (!response.ok) throw new Error("Failed to fetch metrics");
         
         const data = await response.json();
 
-        // 3. Update Total Hours with animation
         const totalHoursEl = document.getElementById('metric-total-hours');
         const currentHours = parseFloat(totalHoursEl.innerText) || 0;
         animateValue(totalHoursEl, currentHours, data.total_hours, 800, true);
 
-        // 4. Update Active Tasks with animation
         const activeTasksEl = document.getElementById('metric-active-tasks');
         const currentTasks = parseInt(activeTasksEl.innerText) || 0;
         animateValue(activeTasksEl, currentTasks, data.active_tasks, 800, false);
 
-        // 5. Update Trend UI (Colors and text based on positive/negative growth)
         const trendText = document.getElementById('metric-trend-text');
         const trendBadge = document.getElementById('metric-trend-badge');
         const trendLabel = document.getElementById('metric-trend-label');
 
-        // Capitalize the timeframe for the label (e.g. "Weekly Trend")
         trendLabel.innerText = `${timeframe.charAt(0).toUpperCase() + timeframe.slice(1)} Trend`;
 
         if (data.trend_percentage > 0) {
@@ -177,9 +241,7 @@ async function updateSummaryMetrics() {
             trendBadge.className = 'bg-gray-50 text-textMuted text-xs font-bold px-2 py-1 rounded-md transition-colors duration-300';
         }
 
-        // 6. Keep the Chart in sync with the dropdown!
         if (typeof loadChartData === "function") {
-            // We pass the timeframe so the chart updates its visual data too
             loadChartData(timeframe);
         }
 
@@ -188,9 +250,7 @@ async function updateSummaryMetrics() {
     }
 }
 
-// Boot up the metrics when the page loads
 document.addEventListener("DOMContentLoaded", () => {
-    // Only run if we are actually on the dashboard page
     if (document.getElementById('metric-total-hours')) {
         updateSummaryMetrics();
     }

@@ -3,8 +3,8 @@
    ========================================================================== */
 
 let currentMode = 'work';
-let totalSeconds = 25 * 60;
-let remainingSeconds = 25 * 60;
+let totalSeconds = 60 * 60;
+let remainingSeconds = 60 * 60;
 let timerInterval = null;
 let isRunning = false;
 

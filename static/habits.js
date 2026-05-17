@@ -9,7 +9,6 @@ let selectedForDeletion = new Set();
  * Fetches the daily routines from the server and renders them.
  */
 async function loadHabits() {
-    // FIX: Updated ID to match the new routine HTML
     const container = document.getElementById('routine-matrix-container'); 
 
     try {
@@ -33,7 +32,10 @@ async function loadHabits() {
                 </div>
             `;
             updateDailyProgress(0, 0);
-            loadRoutineReport(); // Ensure report card loads even if empty
+            loadRoutineReport();
+            
+            // NEW: Instantly update the header streak even if empty
+            if (typeof loadMomentumStreak === 'function') loadMomentumStreak();
             
             if (!document.getElementById('manage-modal-backdrop').classList.contains('hidden')) {
                 renderManageList();
@@ -89,6 +91,9 @@ async function loadHabits() {
         // Trigger the report card update
         loadRoutineReport();
 
+        // NEW: Instantly sync the header fire icon streak
+        if (typeof loadMomentumStreak === 'function') loadMomentumStreak();
+
     } catch (error) {
         console.error("Failed to load Routines:", error);
         container.innerHTML = `<p class="col-span-full text-center text-sm font-medium text-accent-pink bg-red-50 p-4 rounded-2xl border border-red-100">Failed to sync routines. Ensure your database is connected.</p>`;
@@ -96,7 +101,7 @@ async function loadHabits() {
 }
 
 /**
- * NEW: Fetches the 7-day performance data and populates the Report Card
+ * Fetches the 7-day performance data and populates the Report Card
  */
 async function loadRoutineReport() {
     try {
@@ -165,12 +170,11 @@ async function toggleHabit(id, btnElement) {
             body: JSON.stringify({ habit_id: id })
         });
         if (!response.ok) throw new Error('Network response was not ok');
-        loadHabits(); // This will refresh both the routine grid and the report card!
+        loadHabits(); // This refreshes the grid, the report card, AND the new header streak!
     } catch (error) { console.error("Routine toggle failed:", error); }
 }
 
 function updateDailyProgress(completed, total) {
-    // FIX: Updated ID to match the new HTML
     const statusTextEl = document.getElementById('routine-status-text');
     if (!statusTextEl) return;
 

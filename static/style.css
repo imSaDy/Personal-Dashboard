@@ -54,7 +54,7 @@ html {
 
 .input-pastel {
     width: 100%;
-    background-color: #F8FAFC; /* Softer, cooler gray */
+    background-color: #F8FAFC; 
     border: 2px solid #F1F5F9;
     border-radius: 16px;
     padding: 1rem 1.25rem;
@@ -186,8 +186,9 @@ select.input-pastel {
     width: 100%;
     min-height: 250px;
 }
+
 /* --------------------------------------------------------------------------
-   7. PREMIUM SEMANTIC PRIORITY TAGS (Vibrant "Candy" Palette)
+   7. PREMIUM SEMANTIC PRIORITY TAGS
    -------------------------------------------------------------------------- */
 .status-badge {
     display: inline-flex;
@@ -202,14 +203,12 @@ select.input-pastel {
     border: 1px solid transparent;
 }
 
-/* The static dot with a subtle LED glow effect */
 .status-dot {
     width: 6px;
     height: 6px;
     border-radius: 50%;
 }
 
-/* High Priority: Vibrant Watermelon */
 .badge-high {
     background-color: #FFEBF0;
     color: #FF2E63;
@@ -220,7 +219,6 @@ select.input-pastel {
     box-shadow: 0 0 6px rgba(255, 46, 99, 0.4);
 }
 
-/* Medium Priority: Bright Mango Gold */
 .badge-medium {
     background-color: #FFF7E6;
     color: #FF9F1C;
@@ -231,7 +229,6 @@ select.input-pastel {
     box-shadow: 0 0 6px rgba(255, 159, 28, 0.4);
 }
 
-/* Low Priority: Fresh Mint */
 .badge-low {
     background-color: #E8F9F2;
     color: #2EC4B6;
@@ -241,6 +238,7 @@ select.input-pastel {
     background-color: #2EC4B6; 
     box-shadow: 0 0 6px rgba(46, 196, 182, 0.4);
 }
+
 /* --------------------------------------------------------------------------
    8. ELEVATED ROW HOVER PHYSICS
    -------------------------------------------------------------------------- */
@@ -251,10 +249,37 @@ select.input-pastel {
     background-color: transparent;
 }
 
-/* Subtle background glow and physical "lift" on hover */
 .table-row-premium:hover {
     background-color: #FFFFFF;
     transform: translateY(-2px) scale(1.005);
     box-shadow: 0px 10px 30px rgba(112, 144, 176, 0.08);
-    z-index: 10; /* Ensures the lifted row sits above others */
+    z-index: 10; 
+}
+
+/* --------------------------------------------------------------------------
+   9. CUSTOM WIDGET ANIMATIONS (DYNAMIC HEAT GLOW)
+   -------------------------------------------------------------------------- */
+@keyframes heatGlow {
+    0%, 100% { 
+        transform: scale(1); 
+        filter: drop-shadow(0 0 2px var(--glow-color, rgba(239, 68, 68, 0.4))); 
+        opacity: 0.9; 
+    }
+    50% { 
+        transform: scale(1.05); 
+        filter: drop-shadow(0 0 10px var(--glow-color, rgba(239, 68, 68, 0.9))); 
+        opacity: 1; 
+    }
+}
+
+.animate-flame-red {
+    --glow-color: rgba(239, 68, 68, 0.8);
+    animation: heatGlow 2s ease-in-out infinite;
+    transform-origin: bottom center;
+}
+
+.animate-flame-orange {
+    --glow-color: rgba(255, 159, 28, 0.8); /* Mango Gold glow */
+    animation: heatGlow 2.5s ease-in-out infinite; /* Slightly slower pulse for warming up */
+    transform-origin: bottom center;
 }

@@ -23,28 +23,22 @@
                         sans: ['Poppins', 'sans-serif'] 
                     },
                     colors: {
-                        /* The Canvas */
-                        canvas: '#F4F7FE',        /* Soft lavender-tinted gray from the images */
-                        surface: '#FFFFFF',       /* Pure white for floating cards */
-                        
-                        /* Typography */
-                        textMain: '#2B3674',      /* Deep navy blue instead of harsh black */
-                        textMuted: '#A3AED0',     /* Soft grayish-blue for secondary text */
-                        
-                        /* The Pastel & Vibrant Accents */
+                        canvas: '#F4F7FE',        
+                        surface: '#FFFFFF',       
+                        textMain: '#2B3674',      
+                        textMuted: '#A3AED0',     
                         brand: {
-                            DEFAULT: '#4318FF',   /* The vibrant purple/blue from the screenshots */
-                            light: '#F4F1FF',     /* Extremely soft purple for active backgrounds */
+                            DEFAULT: '#4318FF',   
+                            light: '#F4F1FF',     
                         },
                         accent: {
-                            mint: '#05CD99',      /* Soft success green */
+                            mint: '#05CD99',      
                             mintLight: '#E6FAF5',
-                            pink: '#FFCEE6',      /* Pastel pink for decorative elements */
-                            orange: '#FFDCA8'     /* Pastel orange for decorative elements */
+                            pink: '#FFCEE6',      
+                            orange: '#FFDCA8'     
                         }
                     },
                     boxShadow: {
-                        /* The secret to the "floating" neumorphic look is massive, highly transparent shadows */
                         soft: '0px 18px 40px rgba(112, 144, 176, 0.12)',
                         card: '0px 10px 30px rgba(43, 54, 116, 0.04)'
                     }
@@ -99,7 +93,7 @@
                             <svg class="w-6 h-6 transition-colors {{ 'text-brand' if request.path == '/habits' else 'text-textMuted group-hover:text-brand' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
-                            <span class="hidden lg:block">Daily Habits</span>
+                            <span class="hidden lg:block">Daily Routines</span>
                         </a>
                     </li>
 
@@ -150,32 +144,53 @@
 
     <div class="flex-1 flex flex-col relative h-screen overflow-hidden">
         
-        <header class="h-24 bg-canvas/80 backdrop-blur-md px-8 flex items-center justify-between z-40 sticky top-0">
-            <div class="hidden md:flex items-center bg-surface px-5 py-3 rounded-full shadow-sm w-96 border border-gray-100/50">
-                <svg class="w-5 h-5 text-textMuted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-                <input type="text" placeholder="Search data..." class="bg-transparent border-none outline-none ml-3 w-full text-sm font-medium text-textMain placeholder-textMuted">
-            </div>
-
-            <div class="flex items-center gap-6 ml-auto">
-                <button class="text-textMuted hover:text-brand transition-colors relative">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+        <header class="h-24 bg-canvas/80 backdrop-blur-md px-8 flex items-center justify-end z-40 sticky top-0">
+            
+            <div id="momentum-streak-container" class="relative flex items-center gap-4 bg-surface px-4 py-2.5 rounded-full shadow-sm border border-gray-100/50 cursor-pointer transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 ml-auto group">
+                <div class="hidden sm:flex flex-col text-right pr-3 border-r border-gray-100">
+                    <p class="text-[10px] font-bold text-textMuted uppercase tracking-widest leading-none mb-1 text-right">7-Day Streak</p>
+                    <p class="text-sm font-black text-textMain leading-none"><span id="streak-score-text">--%</span></p>
+                </div>
+                <div class="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center border border-gray-100 shadow-inner group-hover:bg-white transition-colors duration-300">
+                    <svg id="streak-fire-icon" class="w-5 h-5 text-gray-300 transition-colors duration-500" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M17.66 11.2C17.43 10.9 17.15 10.64 16.89 10.38C16.22 9.78 15.46 9.35 14.82 8.72C13.33 7.26 12.81 5.04 13.54 3.06C13.6 2.89 13.55 2.69 13.41 2.57C13.28 2.45 13.08 2.44 12.93 2.53C10.87 3.82 9.29 5.86 8.74 8.21C8.42 9.6 8.65 11.05 9.36 12.27C9.43 12.39 9.4 12.55 9.29 12.64C9.17 12.72 9 12.71 8.89 12.61C7.86 11.69 7.42 10.27 7.74 8.94C7.79 8.71 7.63 8.49 7.39 8.48C6.1 8.35 4.89 8.98 4.14 10.05C2.69 12.13 2.5 15.01 3.85 17.27C5.06 19.33 7.31 20.73 9.75 20.94C12.42 21.18 15.18 20.25 17.06 18.25C19.14 16.03 19.72 12.75 18.33 10.08L18.32 10.07C18.15 9.72 17.93 9.41 17.66 11.2ZM12.79 18.29C11.53 18.73 10.15 18.25 9.48 17.12C9.28 16.78 9.17 16.39 9.17 15.99C9.17 15.22 9.53 14.51 10.12 14.04C10.84 13.46 11.3 12.56 11.32 11.59C11.32 11.52 11.34 11.45 11.39 11.4C11.44 11.36 11.5 11.35 11.56 11.37C12.74 11.83 13.56 12.92 13.68 14.19C13.72 14.61 13.92 14.99 14.24 15.26C14.86 15.78 15.13 16.63 14.88 17.41C14.68 18.01 14.18 18.49 13.58 18.66L12.79 18.29Z" />
                     </svg>
-                    <span class="absolute top-0 right-0 w-2.5 h-2.5 bg-red-400 border-2 border-canvas rounded-full"></span>
-                </button>
-                
-                <div class="flex items-center gap-3 pl-6 border-l border-gray-200">
-                    <div class="w-10 h-10 rounded-full bg-gradient-to-r from-accent-pink to-accent-orange flex items-center justify-center text-white font-bold shadow-md">
-                        U
-                    </div>
-                    <div class="hidden md:block text-left">
-                        <p class="text-sm font-bold text-textMain leading-tight">User</p>
-                        <p class="text-xs text-textMuted font-medium">Administrator</p>
+                </div>
+
+                <div class="absolute top-full mt-3 right-0 w-64 bg-white rounded-2xl shadow-[0px_18px_40px_rgba(112,144,176,0.12)] border border-gray-100 p-5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform translate-y-2 group-hover:translate-y-0 z-50 pointer-events-none text-left">
+                    <p class="text-[11px] font-bold text-textMuted uppercase tracking-wider mb-4">Consistency Guide</p>
+                    <div class="space-y-3.5">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-full bg-red-50 flex items-center justify-center flex-shrink-0 border border-red-100">
+                                <svg class="w-4 h-4 text-red-500 animate-flame-red" fill="currentColor" viewBox="0 0 24 24"><path d="M17.66 11.2C17.43 10.9 17.15 10.64 16.89 10.38C16.22 9.78 15.46 9.35 14.82 8.72C13.33 7.26 12.81 5.04 13.54 3.06C13.6 2.89 13.55 2.69 13.41 2.57C13.28 2.45 13.08 2.44 12.93 2.53C10.87 3.82 9.29 5.86 8.74 8.21C8.42 9.6 8.65 11.05 9.36 12.27C9.43 12.39 9.4 12.55 9.29 12.64C9.17 12.72 9 12.71 8.89 12.61C7.86 11.69 7.42 10.27 7.74 8.94C7.79 8.71 7.63 8.49 7.39 8.48C6.1 8.35 4.89 8.98 4.14 10.05C2.69 12.13 2.5 15.01 3.85 17.27C5.06 19.33 7.31 20.73 9.75 20.94C12.42 21.18 15.18 20.25 17.06 18.25C19.14 16.03 19.72 12.75 18.33 10.08L18.32 10.07C18.15 9.72 17.93 9.41 17.66 11.2Z" /></svg>
+                            </div>
+                            <div>
+                                <p class="text-sm font-bold text-textMain leading-tight">Blazing</p>
+                                <p class="text-[10px] font-semibold text-textMuted uppercase tracking-wider mt-0.5">80% - 100%</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-full bg-orange-50 flex items-center justify-center flex-shrink-0 border border-orange-100">
+                                <svg class="w-4 h-4 text-[#FF9F1C] animate-flame-orange" fill="currentColor" viewBox="0 0 24 24"><path d="M17.66 11.2C17.43 10.9 17.15 10.64 16.89 10.38C16.22 9.78 15.46 9.35 14.82 8.72C13.33 7.26 12.81 5.04 13.54 3.06C13.6 2.89 13.55 2.69 13.41 2.57C13.28 2.45 13.08 2.44 12.93 2.53C10.87 3.82 9.29 5.86 8.74 8.21C8.42 9.6 8.65 11.05 9.36 12.27C9.43 12.39 9.4 12.55 9.29 12.64C9.17 12.72 9 12.71 8.89 12.61C7.86 11.69 7.42 10.27 7.74 8.94C7.79 8.71 7.63 8.49 7.39 8.48C6.1 8.35 4.89 8.98 4.14 10.05C2.69 12.13 2.5 15.01 3.85 17.27C5.06 19.33 7.31 20.73 9.75 20.94C12.42 21.18 15.18 20.25 17.06 18.25C19.14 16.03 19.72 12.75 18.33 10.08L18.32 10.07C18.15 9.72 17.93 9.41 17.66 11.2Z" /></svg>
+                            </div>
+                            <div>
+                                <p class="text-sm font-bold text-textMain leading-tight">Warming Up</p>
+                                <p class="text-[10px] font-semibold text-textMuted uppercase tracking-wider mt-0.5">40% - 79%</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center border border-gray-100 flex-shrink-0">
+                                <svg class="w-4 h-4 text-gray-300" fill="currentColor" viewBox="0 0 24 24"><path d="M17.66 11.2C17.43 10.9 17.15 10.64 16.89 10.38C16.22 9.78 15.46 9.35 14.82 8.72C13.33 7.26 12.81 5.04 13.54 3.06C13.6 2.89 13.55 2.69 13.41 2.57C13.28 2.45 13.08 2.44 12.93 2.53C10.87 3.82 9.29 5.86 8.74 8.21C8.42 9.6 8.65 11.05 9.36 12.27C9.43 12.39 9.4 12.55 9.29 12.64C9.17 12.72 9 12.71 8.89 12.61C7.86 11.69 7.42 10.27 7.74 8.94C7.79 8.71 7.63 8.49 7.39 8.48C6.1 8.35 4.89 8.98 4.14 10.05C2.69 12.13 2.5 15.01 3.85 17.27C5.06 19.33 7.31 20.73 9.75 20.94C12.42 21.18 15.18 20.25 17.06 18.25C19.14 16.03 19.72 12.75 18.33 10.08L18.32 10.07C18.15 9.72 17.93 9.41 17.66 11.2Z" /></svg>
+                            </div>
+                            <div>
+                                <p class="text-sm font-bold text-textMain leading-tight">Building Habit</p>
+                                <p class="text-[10px] font-semibold text-textMuted uppercase tracking-wider mt-0.5">0% - 39%</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
+
         </header>
 
         <main class="flex-1 overflow-y-auto px-6 pb-12 lg:px-10 scroll-smooth">
@@ -193,6 +208,8 @@
             if(clockEl) clockEl.innerText = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
         }, 1000);
     </script>
+    
+    <script src="{{ url_for('static', filename='streak.js') }}"></script>
     
     {% block scripts %}{% endblock %}
 </body>
