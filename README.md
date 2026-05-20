@@ -38,10 +38,10 @@ Make sure you have [Python 3.x](https://www.python.org/downloads/) installed on 
 ### Installation
 
 1. **Clone the repository:**
-   ```bash
-   git clone [https://github.com/yourusername/lumen.git](https://github.com/yourusername/lumen.git)
-   cd lumen
-   ```
+```bash
+git clone [https://github.com/yourusername/lumen.git](https://github.com/yourusername/lumen.git)
+cd lumen
+```
 
 2. **Create a virtual environment (Optional but recommended):**
 ```bash
