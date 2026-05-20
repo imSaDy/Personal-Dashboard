@@ -73,7 +73,8 @@ Navigate to `http://localhost:5000` to access your dashboard.
 ```text
 lumen/
 ├── app.py              # Main Flask application and API routes
-├── database.py         # SQLite database initialization and queries
+├── database.py         # SQLite connection and queries
+├── schema.sql          # Database table definitions
 ├── static/
 │   ├── style.css       # Custom animations and Tailwind overrides
 │   ├── script.js       # Core UI logic and API calls
