@@ -4,7 +4,6 @@ Here is a professional, beautifully structured `README.md` tailored exactly to t
 
 You can just click the "Copy" button in the top right corner of the block below and paste it directly into your GitHub repository.
 
-```markdown
 # 🌅 Lumen // Personal Operating System
 
 Lumen is a beautifully designed, minimal productivity dashboard built to help you track your time, maintain daily habits, and execute deep work. Designed with a soft pastel aesthetic and premium micro-interactions, it serves as a unified personal operating system.
