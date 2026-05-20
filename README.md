@@ -41,8 +41,7 @@ Make sure you have [Python 3.x](https://www.python.org/downloads/) installed on 
    ```bash
    git clone [https://github.com/yourusername/lumen.git](https://github.com/yourusername/lumen.git)
    cd lumen
-
-```
+   ```
 
 2. **Create a virtual environment (Optional but recommended):**
 ```bash
@@ -97,7 +96,5 @@ Contributions, issues, and feature requests are welcome! Feel free to check the 
 ## 📄 License
 
 This project is open-source and available under the [MIT License](https://www.google.com/search?q=LICENSE).
-
-```
 
 ```
