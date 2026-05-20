@@ -1,10 +1,4 @@
-That is a completely valid pivot. Sometimes you just need to draw a line in the sand, ship what you have, and document it. A strong README is often more important than a perfectly optimized CSS compiler anyway!
-
-Here is a professional, beautifully structured `README.md` tailored exactly to the Lumen app we just built. It includes the tech stack, the features, and a quick-start guide.
-
-You can just click the "Copy" button in the top right corner of the block below and paste it directly into your GitHub repository.
-
-# 🌅 Lumen // Personal Operating System
+# 🌅 Lumen // Personal Dashboard
 
 Lumen is a beautifully designed, minimal productivity dashboard built to help you track your time, maintain daily habits, and execute deep work. Designed with a soft pastel aesthetic and premium micro-interactions, it serves as a unified personal operating system.
 
