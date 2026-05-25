@@ -1,6 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lumen // Dashboard</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script src="{{ url_for('static', filename='chart.min.js') }}"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='tailwind-built.css') }}">
+</head>
+
+<!-- <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lumen // Dashboard</title>
@@ -46,7 +60,7 @@
             }
         }
     </script>
-</head>
+</head> -->
 <body class="bg-canvas text-textMain font-sans min-h-screen flex antialiased selection:bg-brand selection:text-white overflow-hidden">
 
     <nav class="w-20 lg:w-[280px] bg-surface border-r border-gray-100 flex flex-col justify-between hidden md:flex z-50 shadow-soft transition-all duration-300">
@@ -201,11 +215,37 @@
     </div>
 
     <script>
-        // Digital Clock Logic
+        // Cross-Page background audio player routine
+        function globalTriggerBeep(beepsRemaining) {
+            if (beepsRemaining <= 0) return;
+            let audio = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
+            audio.play()
+                .then(() => {
+                    setTimeout(() => globalTriggerBeep(beepsRemaining - 1), 350);
+                })
+                .catch(e => console.log("Audio context blocked by browser policies."));
+        }
+
+        // Shared Global Layout Engine Interval Ticker
         setInterval(() => {
             const now = new Date();
+            
+            // 1. Digital Clock Logic
             const clockEl = document.getElementById('digital-clock');
             if(clockEl) clockEl.innerText = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+            
+            // 2. Cross-Page Background Timer Check
+            // We only track this if the user is NOT on the /timer page (to prevent double alarms playing)
+            if (window.location.pathname !== '/timer') {
+                const globalIsRunning = localStorage.getItem('timer_is_running') === 'true';
+                if (globalIsRunning) {
+                    const globalEndTime = parseInt(localStorage.getItem('timer_end_time'), 10) || 0;
+                    if (Date.now() >= globalEndTime) {
+                        localStorage.setItem('timer_is_running', 'false');
+                        globalTriggerBeep(3);
+                    }
+                }
+            }
         }, 1000);
     </script>
     

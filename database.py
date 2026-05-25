@@ -104,7 +104,7 @@ def get_activity_totals(timeframe='weekly'):
     conn = get_connection()
     
     # 1. Raw totals for Bar and Doughnut charts
-    if timeframe == 'daily': date_mod = '0 days' # FIXED
+    if timeframe == 'daily': date_mod = '0 days' 
     elif timeframe == 'monthly': date_mod = '-30 days'
     elif timeframe == 'yearly': date_mod = '-365 days'
     else: date_mod = '-7 days'
@@ -118,7 +118,6 @@ def get_activity_totals(timeframe='weekly'):
     totals = [{"activity": row["activity"], "total_hours": row["total_hours"]} for row in cursor.fetchall()]
 
     # 2. Timeline totals for the Smooth Line chart
-    # FIXED: Replaced datetime('-24 hours') with date('now') to lock it to calendar midnight
     if timeframe == 'daily':
         timeline_query = f'''
             SELECT strftime('%H', date) as period, SUM(hours) as total_hours
@@ -153,7 +152,38 @@ def get_activity_totals(timeframe='weekly'):
         '''
 
     cursor = conn.execute(timeline_query)
-    timeline = [{"period": row["period"], "total_hours": row["total_hours"]} for row in cursor.fetchall()]
+    # Store existing database records in a quick-lookup map
+    existing_timeline = {row["period"]: row["total_hours"] for row in cursor.fetchall()}
+
+    # Construct the true chronological baseline sequence
+    expected_periods = []
+    now_local = datetime.now()
+
+    if timeframe == 'daily':
+        expected_periods = [f"{i:02d}" for i in range(24)]
+    elif timeframe == 'monthly':
+        for i in range(27, -1, -1):
+            d = now_local - timedelta(days=i)
+            p = d.strftime('%Y-%W')
+            if p not in expected_periods:
+                expected_periods.append(p)
+    elif timeframe == 'yearly':
+        current_year = now_local.year
+        current_month = now_local.month
+        for i in range(11, -1, -1):
+            m = current_month - i
+            y = current_year
+            while m <= 0:
+                m += 12
+                y -= 1
+            expected_periods.append(f"{y}-{m:02d}")
+    else: # weekly
+        for i in range(6, -1, -1):
+            d = now_local - timedelta(days=i)
+            expected_periods.append(d.strftime('%Y-%m-%d'))
+
+    # Reassemble timeline layout forcing 0.0 values into data holes
+    timeline = [{"period": p, "total_hours": existing_timeline.get(p, 0.0)} for p in expected_periods]
 
     conn.close()
     

@@ -1,5 +1,5 @@
 /* ==========================================================================
-   LUMEN - STATELESS FOCUS TIMER (timer.js)
+   LUMEN - PERSISTENT TIMESTAMP FOCUS TIMER (timer.js)
    ========================================================================== */
 
 let currentMode = 'work';
@@ -7,68 +7,90 @@ let totalSeconds = 60 * 60;
 let remainingSeconds = 60 * 60;
 let timerInterval = null;
 let isRunning = false;
+let endTime = null;
 
-// The circumference of our SVG circle (2 * Math.PI * 120 radius)
+// Modal State Trackers
+let pendingSwitchMode = null;
+let pendingSwitchMinutes = null;
+
 const circleCircumference = 753.98;
 
 function updateDisplay() {
     const minutes = Math.floor(remainingSeconds / 60);
     const seconds = remainingSeconds % 60;
     
-    // Update Text
     document.getElementById('timer-display').innerText = 
         `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
     
-    // Update Document Title so user can see it in the browser tab
     document.title = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')} - Lumen Timer`;
 
-    // Update Ring Animation
     const percentage = remainingSeconds / totalSeconds;
     const offset = circleCircumference - (percentage * circleCircumference);
     document.getElementById('timer-ring').style.strokeDashoffset = offset;
 }
 
-function setTimerMode(mode, minutes) {
-    if (isRunning) return; // Prevent changing modes while running
+function setTimerMode(mode, minutes, forceSave = true) {
+    if (forceSave && mode === currentMode) return;
+
+    // Safety Intercept: Summon custom modal instead of browser alert
+    if (isRunning) {
+        pendingSwitchMode = mode;
+        pendingSwitchMinutes = minutes;
+        openConfirmSwitchModal();
+        return;
+    }
+
+    executeModeSwitch(mode, minutes, forceSave);
+}
+
+function executeModeSwitch(mode, minutes, forceSave = true) {
+    // Failsafe pause before resetting memory
+    if (isRunning) pauseTimer();
 
     currentMode = mode;
     totalSeconds = minutes * 60;
     remainingSeconds = totalSeconds;
     
-    // UI Updates for the Pill Buttons
+    if (forceSave) {
+        localStorage.setItem('timer_current_mode', currentMode);
+        localStorage.setItem('timer_total_seconds', totalSeconds);
+        localStorage.setItem('timer_remaining_seconds', remainingSeconds);
+    }
+
+    // Update Pill Buttons
     ['work', 'short', 'long'].forEach(m => {
         const btn = document.getElementById(`btn-mode-${m}`);
-        if (m === mode) {
-            btn.className = "px-5 py-2 rounded-xl text-sm font-bold transition-all bg-white shadow-sm text-brand pointer-events-none";
-        } else {
-            btn.className = "px-5 py-2 rounded-xl text-sm font-bold transition-all text-textMuted hover:text-textMain cursor-pointer";
+        if (btn) {
+            if (m === mode) {
+                let activeColor = 'text-brand';
+                if (mode === 'short') activeColor = 'text-accent-mint';
+                if (mode === 'long') activeColor = 'text-[#FF9F1C]';
+                
+                btn.className = `px-5 py-2 rounded-xl text-sm font-bold transition-all bg-white shadow-sm ${activeColor} pointer-events-none`;
+            } else {
+                btn.className = "px-5 py-2 rounded-xl text-sm font-bold transition-all text-textMuted hover:text-textMain cursor-pointer";
+            }
         }
     });
 
-    // Elements to recolor
     const ring = document.getElementById('timer-ring');
     const statusText = document.getElementById('timer-status');
     const toggleBtn = document.getElementById('btn-toggle');
     const timeDisplay = document.getElementById('timer-display'); 
     
-    // First, strip away ALL possible color classes so we have a blank slate
     ring.classList.remove('text-brand', 'text-accent-mint', 'text-[#FF9F1C]');
     statusText.classList.remove('text-brand', 'text-accent-mint', 'text-[#FF9F1C]');
     toggleBtn.classList.remove('bg-brand', 'hover:bg-brand/90', 'bg-accent-mint', 'hover:bg-accent-mint/90', 'bg-[#FF9F1C]', 'hover:bg-[#FF9F1C]/90');
-    
-    // Strip away the default dark text and hover effects from the time display
     timeDisplay.classList.remove('text-textMain', 'hover:text-brand', 'text-brand', 'text-accent-mint', 'text-[#FF9F1C]');
     
-    // Ensure the text fades smoothly at the same speed as the SVG ring (1 second)
     timeDisplay.classList.add('transition-colors', 'duration-1000');
 
-    // Apply the exact colors based on the mode
-    if (mode === 'work') {
+    if (mode === 'work' || mode === 'custom') {
         ring.classList.add('text-brand');
         statusText.classList.add('text-brand');
         timeDisplay.classList.add('text-brand');
         toggleBtn.classList.add('bg-brand', 'hover:bg-brand/90');
-        statusText.innerText = "Ready to Focus";
+        statusText.innerText = mode === 'work' ? "Ready to Focus" : "Custom Timer Ready";
     } else if (mode === 'short') {
         ring.classList.add('text-accent-mint');
         statusText.classList.add('text-accent-mint');
@@ -87,6 +109,12 @@ function setTimerMode(mode, minutes) {
 }
 
 function toggleTimer() {
+    const textToggle = document.getElementById('text-toggle').innerText;
+    if (textToggle === "Done") {
+        resetTimer();
+        return;
+    }
+
     if (isRunning) {
         pauseTimer();
     } else {
@@ -94,36 +122,62 @@ function toggleTimer() {
     }
 }
 
-function startTimer() {
+function startTimer(resumingFromStorage = false) {
     isRunning = true;
+    
+    if (!resumingFromStorage) {
+        endTime = Date.now() + (remainingSeconds * 1000);
+        localStorage.setItem('timer_end_time', endTime);
+        localStorage.setItem('timer_is_running', 'true');
+    } else {
+        endTime = parseInt(localStorage.getItem('timer_end_time'), 10);
+    }
+
     document.getElementById('icon-play').classList.add('hidden');
     document.getElementById('icon-pause').classList.remove('hidden');
     document.getElementById('text-toggle').innerText = "Pause";
     
-    document.getElementById('timer-status').innerText = currentMode === 'work' ? "Focusing..." : "Recharging...";
+    document.getElementById('timer-status').innerText = 
+        currentMode === 'short' ? "Taking a Breather..." : 
+        currentMode === 'long' ? "Recharging..." : 
+        currentMode === 'custom' ? "Focusing (Custom)..." :
+        "Focusing...";
 
     timerInterval = setInterval(() => {
-        remainingSeconds--;
+        remainingSeconds = Math.max(0, Math.ceil((endTime - Date.now()) / 1000));
         updateDisplay();
 
         if (remainingSeconds <= 0) {
             clearInterval(timerInterval);
             isRunning = false;
+            localStorage.setItem('timer_is_running', 'false');
+            
             document.getElementById('timer-status').innerText = "Session Complete!";
             document.getElementById('icon-pause').classList.add('hidden');
             document.getElementById('icon-play').classList.remove('hidden');
             document.getElementById('text-toggle').innerText = "Done";
             
-            // Play a gentle notification sound (optional)
-            let audio = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
-            audio.play().catch(e => console.log("Audio play blocked by browser."));
+            playBeepSequence(3);
         }
     }, 1000);
+}
+
+function playBeepSequence(beepsRemaining) {
+    if (beepsRemaining <= 0) return;
+    let audio = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
+    audio.play()
+        .then(() => {
+            setTimeout(() => playBeepSequence(beepsRemaining - 1), 350);
+        })
+        .catch(e => console.log("Audio presentation blocked by browser context."));
 }
 
 function pauseTimer() {
     isRunning = false;
     clearInterval(timerInterval);
+    localStorage.setItem('timer_is_running', 'false');
+    localStorage.setItem('timer_remaining_seconds', remainingSeconds);
+    
     document.getElementById('icon-pause').classList.add('hidden');
     document.getElementById('icon-play').classList.remove('hidden');
     document.getElementById('text-toggle').innerText = "Resume";
@@ -136,19 +190,62 @@ function resetTimer() {
     
     remainingSeconds = totalSeconds;
     
+    localStorage.setItem('timer_is_running', 'false');
+    localStorage.setItem('timer_remaining_seconds', remainingSeconds);
+    localStorage.setItem('timer_total_seconds', totalSeconds);
+
     document.getElementById('icon-pause').classList.add('hidden');
     document.getElementById('icon-play').classList.remove('hidden');
     document.getElementById('text-toggle').innerText = "Start";
     
     if (currentMode === 'work') document.getElementById('timer-status').innerText = "Ready to Focus";
     else if (currentMode === 'short') document.getElementById('timer-status').innerText = "Quick Breather";
-    else document.getElementById('timer-status').innerText = "Extended Break";
+    else if (currentMode === 'long') document.getElementById('timer-status').innerText = "Extended Break";
+    else document.getElementById('timer-status').innerText = "Custom Timer Ready";
 
     updateDisplay();
 }
 
+function loadTimerState() {
+    currentMode = localStorage.getItem('timer_current_mode') || 'work';
+    totalSeconds = parseInt(localStorage.getItem('timer_total_seconds'), 10) || (60 * 60);
+    const storedIsRunning = localStorage.getItem('timer_is_running') === 'true';
+
+    executeModeSwitch(currentMode, totalSeconds / 60, false);
+
+    if (storedIsRunning) {
+        endTime = parseInt(localStorage.getItem('timer_end_time'), 10) || 0;
+        remainingSeconds = Math.max(0, Math.ceil((endTime - Date.now()) / 1000));
+        
+        if (remainingSeconds > 0) {
+            startTimer(true);
+        } else {
+            remainingSeconds = 0;
+            isRunning = false;
+            localStorage.setItem('timer_is_running', 'false');
+            
+            document.getElementById('timer-status').innerText = "Session Complete!";
+            document.getElementById('icon-pause').classList.add('hidden');
+            document.getElementById('icon-play').classList.remove('hidden');
+            document.getElementById('text-toggle').innerText = "Done";
+            
+            updateDisplay();
+        }
+    } else {
+        remainingSeconds = parseInt(localStorage.getItem('timer_remaining_seconds'), 10);
+        if (isNaN(remainingSeconds)) remainingSeconds = totalSeconds;
+        
+        if (remainingSeconds < totalSeconds && remainingSeconds > 0) {
+            document.getElementById('text-toggle').innerText = "Resume";
+            document.getElementById('timer-status').innerText = "Timer Paused";
+        }
+        
+        updateDisplay();
+    }
+}
+
 /* ==========================================================================
-   CUSTOM TIME MODAL LOGIC
+   MODAL LOGIC (CUSTOM TIME & MODE SWITCH WARNING)
    ========================================================================== */
 
 function openCustomTimeModal() {
@@ -195,34 +292,46 @@ function applyCustomTime() {
     }
 
     if (isRunning) pauseTimer();
-
-    totalSeconds = customMinutes * 60;
-    remainingSeconds = totalSeconds;
     
-    ['work', 'short', 'long'].forEach(m => {
-        document.getElementById(`btn-mode-${m}`).className = "px-5 py-2 rounded-xl text-sm font-bold transition-all text-textMuted hover:text-textMain cursor-pointer";
-    });
-
-    document.getElementById('timer-status').innerText = "Custom Timer Ready";
-
-    updateDisplay();
+    // FIX: Pass currentMode instead of 'custom' to preserve colors and tab selection!
+    executeModeSwitch(currentMode, customMinutes, true);
     closeCustomTimeModal();
 }
 
-// Initialize display on load and force the initial color state
-document.addEventListener('DOMContentLoaded', () => {
-    // Force the first load to be styled as Brand Purple
-    const timeDisplay = document.getElementById('timer-display');
-    timeDisplay.classList.remove('text-textMain', 'hover:text-brand');
-    timeDisplay.classList.add('text-brand', 'transition-colors', 'duration-1000');
-    
-    // Apply the exact same smooth fade transition to the status text
-    const statusText = document.getElementById('timer-status');
-    statusText.classList.add('transition-colors', 'duration-1000');
+// ---- NEW: Interruption Warning Modal ----
 
-    // NEW: Apply the smooth fade transition to the start button
-    const toggleBtn = document.getElementById('btn-toggle');
-    toggleBtn.classList.add('duration-1000');
-    
-    updateDisplay();
-});
+function openConfirmSwitchModal() {
+    const backdrop = document.getElementById('confirm-switch-modal-backdrop');
+    const card = document.getElementById('confirm-switch-modal-card');
+
+    backdrop.classList.remove('hidden');
+    setTimeout(() => {
+        backdrop.classList.remove('opacity-0');
+        card.classList.remove('scale-95');
+        card.classList.add('scale-100');
+    }, 10);
+}
+
+function closeConfirmSwitchModal() {
+    const backdrop = document.getElementById('confirm-switch-modal-backdrop');
+    const card = document.getElementById('confirm-switch-modal-card');
+
+    backdrop.classList.add('opacity-0');
+    card.classList.remove('scale-100');
+    card.classList.add('scale-95');
+
+    setTimeout(() => { 
+        backdrop.classList.add('hidden'); 
+        pendingSwitchMode = null;
+        pendingSwitchMinutes = null;
+    }, 300);
+}
+
+function confirmSwitchMode() {
+    if (pendingSwitchMode) {
+        executeModeSwitch(pendingSwitchMode, pendingSwitchMinutes, true);
+    }
+    closeConfirmSwitchModal();
+}
+
+document.addEventListener('DOMContentLoaded', loadTimerState);

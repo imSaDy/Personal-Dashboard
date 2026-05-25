@@ -50,6 +50,7 @@
     </div>
 </div>
 
+<!-- Custom Time Modal -->
 <div id="custom-time-modal-backdrop" class="fixed inset-0 z-50 flex items-center justify-center bg-textMain/20 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
     <div id="custom-time-modal-card" class="pastel-card w-full max-w-sm p-8 mx-4 transform scale-95 transition-all duration-300 shadow-2xl border border-white">
         
@@ -80,6 +81,28 @@
                     Set Time
                 </button>
             </div>
+        </div>
+    </div>
+</div>
+
+<!-- Switch Mode Confirmation Modal -->
+<div id="confirm-switch-modal-backdrop" class="fixed inset-0 z-50 flex items-center justify-center bg-textMain/20 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
+    <div id="confirm-switch-modal-card" class="pastel-card w-full max-w-sm p-8 mx-4 transform scale-95 transition-all duration-300 shadow-2xl border border-white text-center">
+        
+        <div class="w-16 h-16 bg-orange-50 text-[#FF9F1C] rounded-full flex items-center justify-center mx-auto mb-5 shadow-sm border border-orange-100">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+        </div>
+
+        <h3 class="text-xl font-bold text-textMain mb-2">Interrupt Timer?</h3>
+        <p class="text-sm font-medium text-textMuted mb-8">A session is currently running. Are you sure you want to cancel it and switch modes?</p>
+        
+        <div class="flex items-center justify-center gap-3">
+            <button onclick="closeConfirmSwitchModal()" class="px-5 py-3 rounded-xl font-bold text-sm text-textMuted hover:bg-gray-50 hover:text-textMain transition-colors w-full">
+                Keep Running
+            </button>
+            <button onclick="confirmSwitchMode()" class="bg-[#FF9F1C] text-white font-bold text-sm px-5 py-3 rounded-xl shadow-sm hover:shadow-md hover:bg-[#FF9F1C]/90 transition-all w-full flex items-center justify-center gap-2">
+                Switch Mode
+            </button>
         </div>
     </div>
 </div>

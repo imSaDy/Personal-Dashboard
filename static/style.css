@@ -1,3 +1,57 @@
+@import "tailwindcss";
+@source "../templates/**/*.html";
+
+@font-face {
+  font-family: 'Poppins';
+  src: url('fonts/Poppins-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Poppins';
+  src: url('fonts/Poppins-Medium.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Poppins';
+  src: url('fonts/Poppins-SemiBold.woff2') format('woff2');
+  font-weight: 600;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Poppins';
+  src: url('fonts/Poppins-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+}
+
+@theme {
+  --font-sans: 'Poppins', 'sans-serif';
+  --font-sans: 'Poppins', 'sans-serif';
+  
+  --color-canvas: #F4F7FE;
+  --color-surface: #FFFFFF;
+  --color-textMain: #2B3674;
+  --color-textMuted: #A3AED0;
+  
+  --color-brand: #4318FF;
+  --color-brand-light: #F4F1FF;
+  
+  --color-accent-mint: #05CD99;
+  --color-accent-mintLight: #E6FAF5;
+  --color-accent-pink: #FFCEE6;
+  --color-accent-orange: #FFDCA8;
+  
+  --shadow-soft: 0px 18px 40px rgba(112, 144, 176, 0.12);
+  --shadow-card: 0px 10px 30px rgba(43, 54, 116, 0.04);
+}
+
+/* ==========================================================================
+   ادامه کدهای خودتان از اینجا به بعد باشد (دست نزنید)
+   ========================================================================== */
+
+
 /* ==========================================================================
    LIFE OS - SOFT PASTEL DESIGN SYSTEM
    ========================================================================== */
