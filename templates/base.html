@@ -5,11 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lumen // Dashboard</title>
-    
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-    
+        
     <script src="{{ url_for('static', filename='chart.min.js') }}"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='tailwind-built.css') }}">
 </head>
@@ -218,7 +214,7 @@
         // Cross-Page background audio player routine
         function globalTriggerBeep(beepsRemaining) {
             if (beepsRemaining <= 0) return;
-            let audio = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
+            let audio = new Audio('/static/beep.mp3');
             audio.play()
                 .then(() => {
                     setTimeout(() => globalTriggerBeep(beepsRemaining - 1), 350);

@@ -164,7 +164,7 @@ function startTimer(resumingFromStorage = false) {
 
 function playBeepSequence(beepsRemaining) {
     if (beepsRemaining <= 0) return;
-    let audio = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
+    let audio = new Audio('/static/beep.mp3');
     audio.play()
         .then(() => {
             setTimeout(() => playBeepSequence(beepsRemaining - 1), 350);
