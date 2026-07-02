@@ -75,22 +75,9 @@ Lumen's reporting layer is designed for reflection rather than vanity metrics:
 
 ## Architecture
 
-```text
-┌───────────────────────────────┐
-│  Browser UI                   │
-│  Jinja · Tailwind · JS        │
-└──────────────┬────────────────┘
-               │ JSON / HTTP
-┌──────────────▼────────────────┐
-│  Flask application            │
-│  Pages · APIs · automation    │
-└───────┬─────────────────┬─────┘
-        │                 │
-┌───────▼────────┐  ┌─────▼────────────────────┐
-│ SQLite         │  │ Windows timer companion  │
-│ Local data     │  │ Native always-on-top UI  │
-└────────────────┘  └──────────────────────────┘
-```
+<div align="center">
+  <img src="media/lumen-architecture.png" width="1200" alt="Lumen architecture: Browser UI communicates with the Flask app over HTTP and JSON; Flask reads and writes private SQLite data and coordinates the Windows desktop timer">
+</div>
 
 ### Technology
 
@@ -200,7 +187,8 @@ Personal-Dashboard/
 │   ├── Install-DesktopShortcut.ps1
 │   └── Lumen.ico
 ├── media/
-│   └── lumen-dashboard-preview.png
+│   ├── lumen-dashboard-preview.png
+│   └── lumen-architecture.png
 ├── static/
 │   ├── planner.js                 # Day Planner behavior and automation UI
 │   ├── timer.js                   # Persistent manual/scheduled timer state
