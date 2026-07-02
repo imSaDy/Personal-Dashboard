@@ -1,0 +1,1352 @@
+@import "tailwindcss";
+@source "../templates/**/*.html";
+@source "./**/*.js";
+
+@font-face {
+  font-family: 'Poppins';
+  src: url('fonts/Poppins-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Poppins';
+  src: url('fonts/Poppins-Medium.ttf') format('truetype');
+  font-weight: 500;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Poppins';
+  src: url('fonts/Poppins-SemiBold.ttf') format('truetype');
+  font-weight: 600;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Poppins';
+  src: url('fonts/Poppins-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+}
+
+@theme {
+  --font-sans: 'Poppins', 'sans-serif';
+  --font-sans: 'Poppins', 'sans-serif';
+  
+  --color-canvas: #F4F7FE;
+  --color-surface: #FFFFFF;
+  --color-textMain: #2B3674;
+  --color-textMuted: #626F9C;
+  
+  --color-brand: #4318FF;
+  --color-brand-light: #F4F1FF;
+  
+  --color-accent-mint: #05CD99;
+  --color-accent-mintLight: #E6FAF5;
+  --color-accent-pink: #FFCEE6;
+  --color-accent-orange: #FFDCA8;
+  
+  --shadow-soft: 0px 18px 40px rgba(112, 144, 176, 0.12);
+  --shadow-card: 0px 10px 30px rgba(43, 54, 116, 0.04);
+}
+
+/* ==========================================================================
+   ادامه کدهای خودتان از اینجا به بعد باشد (دست نزنید)
+   ========================================================================== */
+
+
+/* ==========================================================================
+   LIFE OS - SOFT PASTEL DESIGN SYSTEM
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. GLOBAL & SCROLLBAR
+   -------------------------------------------------------------------------- */
+html {
+    scroll-behavior: smooth;
+}
+
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+::-webkit-scrollbar-thumb {
+    background: #E2E8F0; 
+    border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #CBD5E1; 
+}
+
+::selection {
+    background-color: #4318FF;
+    color: #FFFFFF;
+}
+
+/* --------------------------------------------------------------------------
+   2. CARD COMPONENTS 
+   -------------------------------------------------------------------------- */
+.pastel-card {
+    background-color: #FFFFFF;
+    border-radius: 24px; 
+    box-shadow: 0px 18px 40px rgba(112, 144, 176, 0.12);
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.pastel-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0px 24px 50px rgba(112, 144, 176, 0.16);
+}
+
+/* --------------------------------------------------------------------------
+   3. FORMS & INPUTS 
+   -------------------------------------------------------------------------- */
+.input-group {
+    position: relative;
+    width: 100%;
+}
+
+.input-pastel {
+    width: 100%;
+    background-color: #F8FAFC; 
+    border: 2px solid #F1F5F9;
+    border-radius: 16px;
+    padding: 1rem 1.25rem;
+    font-size: 0.875rem;
+    color: #2B3674;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.input-pastel::placeholder {
+    color: transparent; 
+}
+
+.input-pastel:focus {
+    outline: none;
+    border-color: #4318FF;
+    background-color: #FFFFFF;
+    box-shadow: 0 0 0 4px rgba(67, 24, 255, 0.08);
+}
+
+.label-floating {
+    position: absolute;
+    left: 1.25rem;
+    top: 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #626F9C;
+    pointer-events: none;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.input-pastel:focus ~ .label-floating,
+.input-pastel:not(:placeholder-shown) ~ .label-floating {
+    top: -0.6rem;
+    left: 1rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #4318FF;
+    background-color: #FFFFFF;
+    padding: 0 0.4rem;
+    border-radius: 4px;
+}
+
+select.input-pastel {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394A3B8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 1.25rem center;
+    background-size: 1.2em;
+}
+
+.activity-suggestions {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 70;
+    max-height: 280px;
+    margin-top: 0.5rem;
+    padding: 0.5rem;
+    overflow-y: auto;
+    border: 1px solid #E9EDF7;
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.98);
+    box-shadow: 0 18px 45px rgba(43, 54, 116, 0.16);
+    backdrop-filter: blur(10px);
+}
+
+.activity-suggestion {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.7rem 0.75rem;
+    border-radius: 12px;
+    text-align: left;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.activity-suggestion:hover,
+.activity-suggestion.is-active {
+    background: #F4F1FF;
+}
+
+.activity-suggestion.is-active .activity-suggestion-name {
+    color: #4318FF;
+}
+
+.activity-suggestion-icon {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    color: #FFFFFF;
+    font-size: 0.7rem;
+    font-weight: 700;
+}
+
+.task-filter-button {
+    min-width: 3.25rem;
+    padding: 0.45rem 0.7rem;
+    border-radius: 9px;
+    font-size: 0.68rem;
+    font-weight: 700;
+    transition: color 0.18s ease, background-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+/* --------------------------------------------------------------------------
+   4. BUTTONS
+   -------------------------------------------------------------------------- */
+.btn-primary {
+    background: linear-gradient(135deg, #4318FF 0%, #7B61FF 100%);
+    color: #FFFFFF;
+    border-radius: 16px;
+    font-weight: 600;
+    letter-spacing: 0.025em;
+    padding: 0.875rem 1.5rem;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0px 8px 20px rgba(67, 24, 255, 0.25);
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0px 12px 28px rgba(67, 24, 255, 0.35);
+}
+
+.btn-primary:active {
+    transform: translateY(1px);
+    box-shadow: 0px 4px 12px rgba(67, 24, 255, 0.2);
+}
+
+/* --------------------------------------------------------------------------
+   5. CUSTOM CHECKBOXES
+   -------------------------------------------------------------------------- */
+.checkbox-custom {
+    appearance: none;
+    width: 26px;
+    height: 26px;
+    border: 2px solid #CBD5E1;
+    border-radius: 6px;
+    background-color: #F8FAFC;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.checkbox-custom:checked {
+    background-color: #4318FF;
+    border-color: #4318FF;
+}
+
+.checkbox-custom:checked::after {
+    content: '';
+    position: absolute;
+    left: 7px;
+    top: 3px;
+    width: 7px;
+    height: 13px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+
+.checkbox-custom:hover:not(:checked) {
+    border-color: #868CFF;
+    background-color: #FFFFFF;
+    box-shadow: 0 0 0 4px rgba(134, 140, 255, 0.1);
+}
+
+body.lumen-modal-open main {
+    overflow: hidden;
+}
+
+/* --------------------------------------------------------------------------
+   6. ANIMATIONS & UTILITIES
+   -------------------------------------------------------------------------- */
+@keyframes slideUpFade {
+    0% { opacity: 0; transform: translateY(20px); }
+    100% { opacity: 1; transform: translateY(0); }
+}
+
+.animate-slide-up {
+    animation: slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.chart-container {
+    position: relative;
+    width: 100%;
+    height: 340px;
+    min-height: 0;
+    overflow: hidden;
+    isolation: isolate;
+}
+
+.chart-container > canvas {
+    display: block;
+    width: 100% !important;
+    height: 100% !important;
+}
+
+.chart-status-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    text-align: center;
+    background: rgba(255, 255, 255, 0.82);
+    backdrop-filter: blur(3px);
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+}
+
+.chart-status-overlay.is-hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+@media (max-width: 640px) {
+    .chart-container {
+        height: 280px;
+    }
+}
+
+/* --------------------------------------------------------------------------
+   7. PREMIUM SEMANTIC PRIORITY TAGS
+   -------------------------------------------------------------------------- */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 0.65rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    border: 1px solid transparent;
+}
+
+.status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+}
+
+.badge-high {
+    background-color: #FFEBF0;
+    color: #C9184A;
+    border-color: #FFD6E0;
+}
+.badge-high .status-dot { 
+    background-color: #FF2E63; 
+    box-shadow: 0 0 6px rgba(255, 46, 99, 0.4);
+}
+
+.badge-medium {
+    background-color: #FFF7E6;
+    color: #A85600;
+    border-color: #FFEAC2;
+}
+.badge-medium .status-dot { 
+    background-color: #FF9F1C; 
+    box-shadow: 0 0 6px rgba(255, 159, 28, 0.4);
+}
+
+.badge-low {
+    background-color: #E8F9F2;
+    color: #00796F;
+    border-color: #CFF0E6;
+}
+.badge-low .status-dot { 
+    background-color: #2EC4B6; 
+    box-shadow: 0 0 6px rgba(46, 196, 182, 0.4);
+}
+
+/* --------------------------------------------------------------------------
+   8. ELEVATED ROW HOVER PHYSICS
+   -------------------------------------------------------------------------- */
+.table-row-premium {
+    position: relative;
+    border-radius: 16px;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    background-color: transparent;
+}
+
+.table-row-premium:hover {
+    background-color: #FFFFFF;
+    transform: translateY(-2px) scale(1.005);
+    box-shadow: 0px 10px 30px rgba(112, 144, 176, 0.08);
+    z-index: 10; 
+}
+
+.task-row:focus-within .task-row-actions {
+    opacity: 1;
+}
+
+/* --------------------------------------------------------------------------
+   9. CUSTOM WIDGET ANIMATIONS (DYNAMIC HEAT GLOW)
+   -------------------------------------------------------------------------- */
+@keyframes heatGlow {
+    0%, 100% { 
+        transform: scale(1); 
+        filter: drop-shadow(0 0 2px var(--glow-color, rgba(239, 68, 68, 0.4))); 
+        opacity: 0.9; 
+    }
+    50% { 
+        transform: scale(1.05); 
+        filter: drop-shadow(0 0 10px var(--glow-color, rgba(239, 68, 68, 0.9))); 
+        opacity: 1; 
+    }
+}
+
+.animate-flame-red {
+    --glow-color: rgba(239, 68, 68, 0.8);
+    animation: heatGlow 2s ease-in-out infinite;
+    transform-origin: bottom center;
+}
+
+.animate-flame-orange {
+    --glow-color: rgba(255, 159, 28, 0.8); /* Mango Gold glow */
+    animation: heatGlow 2.5s ease-in-out infinite; /* Slightly slower pulse for warming up */
+    transform-origin: bottom center;
+}
+
+/* --------------------------------------------------------------------------
+   10. GOAL PROGRESS RANGE
+   -------------------------------------------------------------------------- */
+.goal-range {
+    appearance: none;
+    height: 8px;
+    border-radius: 999px;
+    background: #E9EDF7;
+    cursor: pointer;
+}
+
+.goal-range::-webkit-slider-thumb {
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #4318FF;
+    border: 4px solid #FFFFFF;
+    box-shadow: 0 3px 10px rgba(67, 24, 255, 0.35);
+    transition: transform 0.2s ease;
+}
+
+.goal-range::-webkit-slider-thumb:hover {
+    transform: scale(1.12);
+}
+
+.goal-range::-moz-range-thumb {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #4318FF;
+    border: 4px solid #FFFFFF;
+    box-shadow: 0 3px 10px rgba(67, 24, 255, 0.35);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto;
+    }
+
+    .animate-slide-up,
+    .animate-flame-red,
+    .animate-flame-orange {
+        animation: none !important;
+    }
+}
+
+/* --------------------------------------------------------------------------
+   11. DAILY JOURNAL
+   -------------------------------------------------------------------------- */
+.journal-textarea {
+    width: 100%;
+    min-height: 108px;
+    resize: vertical;
+    background: #F8FAFC;
+    border: 2px solid #F1F5F9;
+    border-radius: 16px;
+    padding: 1rem 1.1rem;
+    color: #2B3674;
+    font-size: 0.875rem;
+    font-weight: 500;
+    line-height: 1.65;
+    transition: all 0.25s ease;
+}
+
+.journal-textarea::placeholder {
+    color: #626F9C;
+}
+
+.journal-textarea:focus {
+    outline: none;
+    background: #FFFFFF;
+    border-color: #4318FF;
+    box-shadow: 0 0 0 4px rgba(67, 24, 255, 0.08);
+}
+
+/* --------------------------------------------------------------------------
+   12. AUTOMATED DAY PLANNER
+   -------------------------------------------------------------------------- */
+.planner-day-button {
+    min-width: 92px;
+    padding: 0.65rem 1rem;
+    border-radius: 0.8rem;
+    font-size: 0.75rem;
+    font-weight: 800;
+    line-height: 1;
+    transition: color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.planner-day-button.is-active {
+    color: #4318FF;
+    background: #F4F1FF;
+    box-shadow: inset 0 0 0 1px rgba(67, 24, 255, 0.08);
+}
+
+.planner-mode-button {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.65rem 0.35rem;
+    border: 1px solid #EDF1F7;
+    border-radius: 0.85rem;
+    color: #626F9C;
+    background: #F8FAFC;
+    font-size: 0.65rem;
+    font-weight: 800;
+    transition: transform 0.2s ease, border-color 0.2s ease, color 0.2s ease, background 0.2s ease;
+}
+
+.planner-mode-button:hover {
+    transform: translateY(-1px);
+    color: #2B3674;
+    background: #FFFFFF;
+}
+
+.planner-mode-icon {
+    width: 1.9rem;
+    height: 1.9rem;
+    display: grid;
+    place-items: center;
+    border-radius: 0.65rem;
+    background: #FFFFFF;
+    box-shadow: 0 4px 12px rgba(112, 144, 176, 0.12);
+}
+
+.planner-mode-work.is-active {
+    color: #4318FF;
+    border-color: rgba(67, 24, 255, 0.18);
+    background: #F4F1FF;
+}
+
+.planner-mode-short.is-active {
+    color: #05B98C;
+    border-color: rgba(5, 185, 140, 0.18);
+    background: #E6FAF5;
+}
+
+.planner-mode-long.is-active {
+    color: #F59E0B;
+    border-color: rgba(245, 158, 11, 0.2);
+    background: #FFF8E8;
+}
+
+.planner-edit-time-range {
+    display: grid;
+    gap: 0;
+}
+
+.planner-edit-time-control {
+    --time-accent: #4318FF;
+    --time-soft: #F4F1FF;
+    padding: 0.85rem;
+    border: 1px solid #E9EDF7;
+    border-radius: 1.05rem;
+    background:
+        radial-gradient(circle at 100% 0%, var(--time-soft), transparent 38%),
+        #FFFFFF;
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease,
+        transform 0.2s ease;
+}
+
+.planner-edit-time-end {
+    --time-accent: #05B98C;
+    --time-soft: #E6FAF5;
+}
+
+.planner-edit-time-control:focus-within {
+    border-color: color-mix(in srgb, var(--time-accent) 35%, transparent);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--time-accent) 8%, transparent);
+    transform: translateY(-1px);
+}
+
+.planner-edit-time-heading {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+}
+
+.planner-edit-time-icon {
+    width: 2rem;
+    height: 2rem;
+    display: grid;
+    flex-shrink: 0;
+    place-items: center;
+    border-radius: 0.7rem;
+    color: var(--time-accent);
+    background: var(--time-soft);
+}
+
+.planner-edit-time-icon svg {
+    width: 1rem;
+    height: 1rem;
+}
+
+.planner-edit-time-title,
+.planner-edit-time-copy {
+    display: block;
+}
+
+.planner-edit-time-title {
+    color: #2B3674;
+    font-size: 0.7rem;
+    font-weight: 900;
+}
+
+.planner-edit-time-copy {
+    margin-top: 0.1rem;
+    color: #626F9C;
+    font-size: 0.55rem;
+    font-weight: 700;
+}
+
+.planner-edit-time-summary {
+    flex-shrink: 0;
+    padding: 0.35rem 0.55rem;
+    border-radius: 0.65rem;
+    color: var(--time-accent);
+    background: var(--time-soft);
+    font-size: 0.65rem;
+    font-weight: 900;
+    font-variant-numeric: tabular-nums;
+}
+
+.planner-edit-time-picker {
+    display: grid;
+    grid-template-columns: 2.8rem minmax(0, 1fr) auto minmax(0, 1fr) 2.8rem;
+    align-items: end;
+    gap: 0.45rem;
+    margin-top: 0.75rem;
+}
+
+.planner-edit-time-part {
+    display: block;
+    min-width: 0;
+}
+
+.planner-edit-time-part > span:first-child {
+    display: block;
+    margin: 0 0 0.28rem 0.25rem;
+    color: #626F9C;
+    font-size: 0.5rem;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.planner-edit-time-select-shell {
+    position: relative;
+    display: block;
+}
+
+.planner-edit-time-select-shell::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    right: 0.65rem;
+    width: 0.38rem;
+    height: 0.38rem;
+    border-right: 1.5px solid #626F9C;
+    border-bottom: 1.5px solid #626F9C;
+    pointer-events: none;
+    transform: translateY(-70%) rotate(45deg);
+}
+
+.planner-edit-time-part select {
+    width: 100%;
+    appearance: none;
+    padding: 0.7rem 1.6rem 0.7rem 0.7rem;
+    border: 1px solid #E9EDF7;
+    border-radius: 0.75rem;
+    outline: none;
+    color: #2B3674;
+    background: #F8FAFD;
+    font: inherit;
+    font-size: 0.8rem;
+    font-weight: 900;
+    font-variant-numeric: tabular-nums;
+    cursor: pointer;
+    transition: border-color 0.18s ease, background 0.18s ease, box-shadow 0.18s ease;
+}
+
+.planner-edit-time-part select:hover {
+    border-color: color-mix(in srgb, var(--time-accent) 22%, #E9EDF7);
+    background: #FFFFFF;
+}
+
+.planner-edit-time-part select:focus-visible {
+    border-color: var(--time-accent);
+    background: #FFFFFF;
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--time-accent) 9%, transparent);
+}
+
+.planner-edit-time-colon {
+    align-self: center;
+    margin-top: 0.8rem;
+    color: #626F9C;
+    font-size: 1rem;
+    font-weight: 900;
+}
+
+.planner-edit-time-nudge {
+    height: 2.55rem;
+    border: 1px solid #E9EDF7;
+    border-radius: 0.75rem;
+    color: #626F9C;
+    background: #F8FAFD;
+    font-size: 0.58rem;
+    font-weight: 900;
+    transition:
+        color 0.18s ease,
+        border-color 0.18s ease,
+        background 0.18s ease,
+        transform 0.18s ease;
+}
+
+.planner-edit-time-nudge:hover,
+.planner-edit-time-nudge:focus-visible {
+    border-color: color-mix(in srgb, var(--time-accent) 22%, transparent);
+    outline: none;
+    color: var(--time-accent);
+    background: var(--time-soft);
+    transform: translateY(-1px);
+}
+
+.planner-edit-time-bridge {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    align-items: center;
+    gap: 0.55rem;
+    min-height: 2.65rem;
+    padding: 0 1rem;
+}
+
+.planner-edit-time-bridge-line {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #DDE4F0);
+}
+
+.planner-edit-time-bridge-line:last-child {
+    background: linear-gradient(90deg, #DDE4F0, transparent);
+}
+
+.planner-edit-time-duration {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.3rem 0.55rem;
+    border-radius: 999px;
+    color: #626F9C;
+    background: #F4F7FE;
+    font-size: 0.55rem;
+    font-weight: 800;
+}
+
+.planner-edit-time-duration svg {
+    width: 0.75rem;
+    height: 0.75rem;
+    color: #4318FF;
+}
+
+.planner-edit-time-duration strong {
+    color: #2B3674;
+    font-weight: 900;
+}
+
+.planner-edit-time-hint {
+    margin-top: 0.65rem;
+    color: #626F9C;
+    font-size: 0.55rem;
+    font-weight: 700;
+    line-height: 1.5;
+    text-align: center;
+}
+
+.planner-edit-time-control.is-invalid {
+    --time-accent: #EF4444;
+    --time-soft: #FEF2F2;
+    border-color: #FECACA;
+}
+
+.planner-edit-time-bridge.is-invalid .planner-edit-time-duration {
+    color: #DC2626;
+    background: #FEF2F2;
+}
+
+.planner-edit-time-bridge.is-invalid .planner-edit-time-duration svg,
+.planner-edit-time-bridge.is-invalid .planner-edit-time-duration strong {
+    color: #DC2626;
+}
+
+.planner-map-shell {
+    position: relative;
+    overflow: hidden;
+    padding: 1rem;
+    border: 1px solid rgba(67, 24, 255, 0.08);
+    border-radius: 1.25rem;
+    background:
+        radial-gradient(circle at 96% 0%, rgba(67, 24, 255, 0.07), transparent 35%),
+        linear-gradient(135deg, #FBFCFF, #F7F9FE);
+}
+
+.planner-rhythm-strip {
+    position: relative;
+    width: 100%;
+    height: 54px;
+    overflow: visible;
+    border: 1px solid #E9EDF7;
+    border-radius: 16px;
+    background:
+        repeating-linear-gradient(
+            90deg,
+            transparent 0,
+            transparent calc(4.166666% - 1px),
+            rgba(163, 174, 208, 0.16) calc(4.166666% - 1px),
+            rgba(163, 174, 208, 0.16) 4.166666%
+        ),
+        linear-gradient(180deg, #FFFFFF, #F9FAFE);
+    box-shadow: inset 0 2px 5px rgba(112, 144, 176, 0.05);
+}
+
+.planner-rhythm-segment {
+    position: absolute;
+    top: 7px;
+    bottom: 7px;
+    min-width: 7px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border: 2px solid rgba(255, 255, 255, 0.82);
+    border-radius: 11px;
+    cursor: pointer;
+    box-shadow: 0 5px 12px rgba(43, 54, 116, 0.16);
+    transition: transform 0.2s ease, filter 0.2s ease, box-shadow 0.2s ease;
+}
+
+.planner-rhythm-segment::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.23), transparent 55%);
+    pointer-events: none;
+}
+
+.planner-rhythm-segment > span {
+    position: relative;
+    z-index: 1;
+    color: #FFFFFF;
+    font-size: 0.5rem;
+    font-weight: 900;
+    line-height: 1;
+    text-shadow: 0 1px 3px rgba(43, 54, 116, 0.25);
+}
+
+.planner-rhythm-segment.is-compact > span {
+    display: none;
+}
+
+.planner-rhythm-segment:hover,
+.planner-rhythm-segment:focus-visible {
+    z-index: 5;
+    transform: translateY(-2px) scaleY(1.06);
+    filter: brightness(1.04);
+    box-shadow: 0 9px 18px rgba(43, 54, 116, 0.22);
+    outline: none;
+}
+
+.planner-rhythm-work {
+    background: linear-gradient(90deg, #4318FF, #7B61FF);
+}
+
+.planner-rhythm-short {
+    background: linear-gradient(90deg, #05B98C, #3DD6AE);
+}
+
+.planner-rhythm-long {
+    background: linear-gradient(90deg, #F59E0B, #FBCB62);
+}
+
+.planner-rhythm-now {
+    position: absolute;
+    z-index: 7;
+    top: -5px;
+    bottom: -5px;
+    width: 2px;
+    border-radius: 999px;
+    background: #FF5C7A;
+    box-shadow: 0 0 0 3px rgba(255, 92, 122, 0.12);
+    pointer-events: none;
+}
+
+.planner-rhythm-now::before {
+    content: "";
+    position: absolute;
+    top: -2px;
+    left: 50%;
+    width: 8px;
+    height: 8px;
+    border: 2px solid #FFFFFF;
+    border-radius: 50%;
+    background: #FF5C7A;
+    transform: translateX(-50%);
+    box-shadow: 0 2px 6px rgba(255, 92, 122, 0.35);
+}
+
+.planner-switch {
+    position: relative;
+    width: 42px;
+    height: 24px;
+    flex-shrink: 0;
+    border-radius: 999px;
+    background: #DDE4F0;
+    transition: background 0.22s ease;
+}
+
+.planner-switch > span {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #FFFFFF;
+    box-shadow: 0 2px 7px rgba(43, 54, 116, 0.2);
+    transition: transform 0.22s ease;
+}
+
+.planner-switch.is-on {
+    background: #05B98C;
+}
+
+.planner-switch.is-on > span {
+    transform: translateX(18px);
+}
+
+.planner-quick-mini-strip {
+    display: flex;
+    width: 100%;
+    height: 20px;
+    gap: 2px;
+    overflow: hidden;
+    padding: 3px;
+    border: 1px solid #E9EDF7;
+    border-radius: 999px;
+    background: #FFFFFF;
+}
+
+.planner-quick-segment {
+    display: block;
+    min-width: 4px;
+    border-radius: 999px;
+}
+
+.planner-quick-work {
+    background: linear-gradient(90deg, #4318FF, #7B61FF);
+}
+
+.planner-quick-short {
+    background: linear-gradient(90deg, #05B98C, #3DD6AE);
+}
+
+.planner-quick-long {
+    background: linear-gradient(90deg, #F59E0B, #FBCB62);
+}
+
+.planner-timeline {
+    display: flex;
+    flex-direction: column;
+}
+
+.planner-session {
+    --session-color: #4318FF;
+    --session-soft: #F4F1FF;
+    display: grid;
+    grid-template-columns: 92px 28px minmax(0, 1fr);
+    align-items: stretch;
+}
+
+.planner-session-short {
+    --session-color: #05B98C;
+    --session-soft: #E6FAF5;
+}
+
+.planner-session-long {
+    --session-color: #F59E0B;
+    --session-soft: #FFF8E8;
+}
+
+.planner-session-time {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: space-between;
+    padding: 0.55rem 0.75rem 0.55rem 0;
+    color: #626F9C;
+    font-size: 0.62rem;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+}
+
+.planner-session-duration {
+    color: var(--session-color);
+    padding: 0.2rem 0.45rem;
+    border-radius: 999px;
+    background: var(--session-soft);
+    font-size: 0.58rem;
+}
+
+.planner-session-rail {
+    position: relative;
+    display: flex;
+    justify-content: center;
+}
+
+.planner-session-dot {
+    position: relative;
+    z-index: 1;
+    width: 13px;
+    height: 13px;
+    margin-top: 1.2rem;
+    border: 3px solid #FFFFFF;
+    border-radius: 50%;
+    background: var(--session-color);
+    box-shadow: 0 0 0 3px var(--session-soft);
+}
+
+.planner-session-line {
+    position: absolute;
+    top: 1.55rem;
+    bottom: -0.85rem;
+    width: 2px;
+    border-radius: 999px;
+    background: linear-gradient(var(--session-color), #E9EDF7);
+}
+
+.planner-session:last-child .planner-session-line {
+    bottom: 1rem;
+}
+
+.planner-session-card {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin: 0.25rem 0 0.55rem 0.5rem;
+    padding: 1rem 1.1rem;
+    border: 1px solid rgba(163, 174, 208, 0.14);
+    border-left: 4px solid var(--session-color);
+    border-radius: 1.1rem;
+    background:
+        radial-gradient(circle at 100% 0%, var(--session-soft), transparent 42%),
+        #FFFFFF;
+    box-shadow: 0 8px 22px rgba(112, 144, 176, 0.08);
+    transition: transform 0.22s ease, box-shadow 0.22s ease, opacity 0.22s ease;
+}
+
+.planner-session-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 14px 30px rgba(112, 144, 176, 0.13);
+}
+
+.planner-session-mode {
+    color: var(--session-color);
+    font-size: 0.58rem;
+    font-weight: 900;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.planner-session-actions {
+    display: flex;
+    flex-shrink: 0;
+    gap: 0.4rem;
+}
+
+.planner-session-action {
+    width: 2.1rem;
+    height: 2.1rem;
+    display: grid;
+    place-items: center;
+    border: 1px solid transparent;
+    border-radius: 0.7rem;
+    color: #626F9C;
+    background: rgba(244, 247, 254, 0.9);
+    transition:
+        color 0.18s ease,
+        border-color 0.18s ease,
+        background 0.18s ease,
+        transform 0.18s ease;
+}
+
+.planner-session-action:hover,
+.planner-session-action:focus-visible {
+    outline: none;
+    transform: translateY(-1px);
+}
+
+.planner-session-action-edit:hover,
+.planner-session-action-edit:focus-visible {
+    color: #4318FF;
+    border-color: rgba(67, 24, 255, 0.1);
+    background: #F4F1FF;
+}
+
+.planner-session-action-delete:hover,
+.planner-session-action-delete:focus-visible {
+    color: #EF4444;
+    border-color: #FEE2E2;
+    background: #FEF2F2;
+}
+
+.planner-session.is-past .planner-session-card {
+    opacity: 0.55;
+    box-shadow: none;
+}
+
+.planner-session.is-live .planner-session-card {
+    border-color: color-mix(in srgb, var(--session-color) 24%, transparent);
+    box-shadow: 0 14px 34px color-mix(in srgb, var(--session-color) 14%, transparent);
+}
+
+.planner-live-badge,
+.planner-next-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 999px;
+    font-size: 0.55rem;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.planner-live-badge {
+    color: #FFFFFF;
+    background: var(--session-color);
+}
+
+.planner-live-badge > span {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: currentColor;
+    box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.18);
+}
+
+.planner-next-badge {
+    color: #626F9C;
+    background: #F4F7FE;
+}
+
+.planner-gap {
+    display: grid;
+    grid-template-columns: 120px minmax(0, 1fr);
+    align-items: center;
+    min-height: 42px;
+}
+
+.planner-gap-line {
+    grid-column: 2;
+    height: 1px;
+    border-top: 1px dashed #DDE4F0;
+}
+
+.planner-gap-copy {
+    grid-column: 2;
+    justify-self: center;
+    margin-top: -1px;
+    padding: 0.18rem 0.55rem;
+    color: #626F9C;
+    background: #FFFFFF;
+    font-size: 0.55rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.schedule-live-pill {
+    position: fixed;
+    right: 1.5rem;
+    bottom: 1.5rem;
+    z-index: 65;
+    display: flex;
+    max-width: min(360px, calc(100vw - 2rem));
+    min-width: 260px;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.75rem 0.85rem;
+    border: 1px solid rgba(67, 24, 255, 0.12);
+    border-radius: 1rem;
+    color: #4318FF;
+    background: rgba(255, 255, 255, 0.94);
+    box-shadow: 0 18px 45px rgba(43, 54, 116, 0.18);
+    backdrop-filter: blur(12px);
+    animation: schedulePillIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.schedule-live-pill.hidden {
+    display: none;
+}
+
+.schedule-live-icon {
+    width: 2rem;
+    height: 2rem;
+    display: grid;
+    flex-shrink: 0;
+    place-items: center;
+    border-radius: 0.65rem;
+    color: #FFFFFF;
+    background: linear-gradient(135deg, #4318FF, #7B61FF);
+}
+
+.schedule-live-pill[data-session-type="short"] {
+    color: #05B98C;
+    border-color: rgba(5, 185, 140, 0.14);
+}
+
+.schedule-live-pill[data-session-type="short"] .schedule-live-icon {
+    background: linear-gradient(135deg, #05B98C, #3DD6AE);
+}
+
+.schedule-live-pill[data-session-type="long"] {
+    color: #D98B00;
+    border-color: rgba(245, 158, 11, 0.16);
+}
+
+.schedule-live-pill[data-session-type="long"] .schedule-live-icon {
+    background: linear-gradient(135deg, #F59E0B, #FBCB62);
+}
+
+@keyframes schedulePillIn {
+    from {
+        opacity: 0;
+        transform: translateY(12px) scale(0.96);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@media (max-width: 640px) {
+    .planner-day-button {
+        min-width: 82px;
+    }
+
+    .planner-map-shell {
+        padding: 0.85rem;
+    }
+
+    .planner-rhythm-strip {
+        height: 46px;
+        border-radius: 13px;
+    }
+
+    .planner-rhythm-segment {
+        top: 6px;
+        bottom: 6px;
+        border-radius: 9px;
+        cursor: default;
+    }
+
+    .planner-session {
+        grid-template-columns: 68px 20px minmax(0, 1fr);
+    }
+
+    .planner-session-time {
+        padding-right: 0.4rem;
+        font-size: 0.52rem;
+    }
+
+    .planner-session-card {
+        align-items: flex-start;
+        flex-direction: column;
+        margin-left: 0.3rem;
+        padding: 0.9rem;
+    }
+
+    .planner-session-card > div:first-child {
+        width: 100%;
+        padding-right: 5.5rem;
+    }
+
+    .planner-session-actions {
+        align-self: flex-end;
+        margin-top: -2.75rem;
+    }
+
+    .planner-session-action {
+        width: 2.75rem;
+        height: 2.75rem;
+    }
+
+    .planner-gap {
+        grid-template-columns: 88px minmax(0, 1fr);
+    }
+
+    .schedule-live-pill {
+        right: 1rem;
+        bottom: 1rem;
+        min-width: 0;
+        width: calc(100vw - 2rem);
+    }
+}

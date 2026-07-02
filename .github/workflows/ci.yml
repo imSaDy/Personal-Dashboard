@@ -1,0 +1,60 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Python ${{ matrix.python-version }}
+    runs-on: windows-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.13"]
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+
+      - name: Install dependencies
+        run: python -m pip install --requirement requirements.txt
+
+      - name: Compile Python sources
+        run: python -m compileall -q app.py database.py launcher scripts
+
+      - name: Verify an empty fresh database
+        run: python scripts/verify_fresh_install.py
+
+      - name: Smoke-test the release
+        run: python scripts/verify_release.py
+
+      - name: Check JavaScript syntax
+        shell: pwsh
+        run: |
+          Get-ChildItem static -Filter *.js | ForEach-Object {
+            node --check $_.FullName
+            if ($LASTEXITCODE -ne 0) {
+              throw "JavaScript syntax failed: $($_.Name)"
+            }
+          }
+
+      - name: Reject private or generated files
+        shell: pwsh
+        run: |
+          $forbidden = git ls-files |
+            Select-String -Pattern '(^|/)(__pycache__|tmp|~)(/|$)|\.pyc$|\.db($|-)|\.sqlite3?$|\.zip$|(^|/)\.ssh/'
+          if ($forbidden) {
+            $forbidden | ForEach-Object { Write-Error $_.Line }
+            throw "Private or generated files are tracked."
+          }

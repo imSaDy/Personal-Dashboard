@@ -1,0 +1,41 @@
+# Local user data. The repository must never publish dashboard data or exports.
+database.db
+*.db
+*.db-*
+*.sqlite
+*.sqlite3
+backups/
+exports/
+
+# Local configuration and secrets.
+.env
+.env.*
+!.env.example
+~/
+
+# Per-machine Python environments, caches, and test output.
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Local build/runtime artifacts.
+tmp/
+build/
+dist/
+tailwindcss.exe
+launcher/*.log
+*.zip
+
+# Editor and operating-system noise.
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+Desktop.ini

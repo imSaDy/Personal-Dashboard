@@ -1,0 +1,300 @@
+{% extends "base.html" %}
+
+{% block title %}Performance // Lumen{% endblock %}
+
+{% block content %}
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-5 mb-8 animate-slide-up relative z-30" style="animation-delay: 0.1s;">
+    <div class="max-w-2xl">
+        <div class="inline-flex items-center gap-2 bg-white border border-gray-100 rounded-full px-3 py-1.5 mb-3 shadow-sm">
+            <span class="w-2 h-2 rounded-full bg-accent-mint"></span>
+            <span class="text-[10px] font-bold text-textMuted uppercase tracking-widest">Reflection space</span>
+        </div>
+        <h2 class="text-3xl md:text-4xl font-black text-textMain tracking-tight">Performance</h2>
+        <p class="text-textMuted mt-2 text-sm font-medium leading-relaxed">See where your attention went, how your pace changed, and what deserves your next move.</p>
+    </div>
+
+    <div class="relative inline-block w-full md:w-56 group" id="custom-dropdown-container">
+        <input type="hidden" id="timeframe-selector" value="weekly">
+        <button type="button" id="dropdown-trigger" aria-haspopup="true" aria-expanded="false" onclick="if(typeof toggleDropdown === 'function') toggleDropdown()" class="w-full bg-white border border-gray-100 text-textMain font-bold text-sm px-5 py-3.5 rounded-2xl shadow-sm hover:shadow-card transition-all duration-300 cursor-pointer outline-none focus:ring-4 focus:ring-brand-light flex items-center justify-between group-hover:border-brand/30">
+            <div class="flex items-center gap-3">
+                <div id="dropdown-selected-icon" class="text-brand flex items-center justify-center">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                </div>
+                <span id="dropdown-selected-text">Weekly Report</span>
+            </div>
+            <svg id="dropdown-arrow" class="w-4 h-4 text-textMuted transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M19 9l-7 7-7-7"></path></svg>
+        </button>
+
+        <div id="dropdown-menu" class="absolute right-0 z-50 w-full mt-2 bg-white rounded-2xl shadow-[0px_24px_50px_rgba(112,144,176,0.16)] border border-gray-100 opacity-0 invisible transform -translate-y-2 transition-all duration-300 overflow-hidden p-2">
+            <button type="button" data-value="daily" onclick="if(typeof selectTimeframe === 'function') selectTimeframe('daily', 'Daily Report')" class="dropdown-item w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-bold text-textMuted hover:text-brand hover:bg-brand-light transition-all mb-1 group">
+                <div class="flex items-center gap-3">
+                    <svg class="w-4 h-4 opacity-70 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                    <span>Daily Report</span>
+                </div>
+                <svg class="w-4 h-4 text-brand opacity-0 check-icon transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+            </button>
+            <button type="button" data-value="weekly" onclick="if(typeof selectTimeframe === 'function') selectTimeframe('weekly', 'Weekly Report')" class="dropdown-item w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-bold text-brand bg-brand-light transition-all mb-1 group">
+                <div class="flex items-center gap-3">
+                    <svg class="w-4 h-4 opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                    <span>Weekly Report</span>
+                </div>
+                <svg class="w-4 h-4 text-brand opacity-100 check-icon transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+            </button>
+            <button type="button" data-value="monthly" onclick="if(typeof selectTimeframe === 'function') selectTimeframe('monthly', 'Monthly Report')" class="dropdown-item w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-bold text-textMuted hover:text-brand hover:bg-brand-light transition-all mb-1 group">
+                <div class="flex items-center gap-3">
+                    <svg class="w-4 h-4 opacity-70 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                    <span>Monthly Report</span>
+                </div>
+                <svg class="w-4 h-4 text-brand opacity-0 check-icon transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+            </button>
+            <button type="button" data-value="yearly" onclick="if(typeof selectTimeframe === 'function') selectTimeframe('yearly', 'Yearly Report')" class="dropdown-item w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-bold text-textMuted hover:text-brand hover:bg-brand-light transition-all group">
+                <div class="flex items-center gap-3">
+                    <svg class="w-4 h-4 opacity-70 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h18M5 3v4m14-4v4M5 11h14M7 15h3m4 0h3m-10 4h3m4 0h3"></path></svg>
+                    <span>Yearly Report</span>
+                </div>
+                <svg class="w-4 h-4 text-brand opacity-0 check-icon transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="grid grid-cols-2 xl:grid-cols-4 gap-4 md:gap-5 mb-8 animate-slide-up" style="animation-delay: 0.2s;">
+    <div class="pastel-card p-5 md:p-6">
+        <div class="flex items-start justify-between gap-3">
+            <div class="min-w-0">
+                <p class="text-[9px] md:text-[10px] font-bold text-textMuted uppercase tracking-widest">Focus time</p>
+                <div class="flex items-end gap-1 mt-2">
+                    <h3 id="metric-total-hours" class="text-2xl md:text-3xl font-black text-textMain">--</h3>
+                    <span class="text-xs font-bold text-textMuted mb-1">hrs</span>
+                </div>
+            </div>
+            <div class="w-10 h-10 rounded-xl bg-brand-light text-brand flex items-center justify-center flex-shrink-0">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            </div>
+        </div>
+        <p id="performance-period-label" class="text-[10px] font-semibold text-textMuted mt-4">Last 7 days</p>
+    </div>
+
+    <div class="pastel-card p-5 md:p-6">
+        <div class="flex items-start justify-between gap-3">
+            <div class="min-w-0">
+                <p class="text-[9px] md:text-[10px] font-bold text-textMuted uppercase tracking-widest">Period change</p>
+                <div class="flex items-center gap-2 mt-2">
+                    <h3 id="metric-trend-text" class="text-2xl md:text-3xl font-black text-textMain">--</h3>
+                    <span id="metric-trend-badge" class="bg-gray-50 text-textMuted text-[9px] font-bold px-2 py-1 rounded-md transition-colors duration-300">--</span>
+                </div>
+            </div>
+            <div class="w-10 h-10 rounded-xl bg-accent-mintLight text-accent-mint flex items-center justify-center flex-shrink-0">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 17l6-6 4 4 6-8"></path></svg>
+            </div>
+        </div>
+        <p id="metric-trend-label" class="text-[10px] font-semibold text-textMuted mt-4">Compared with previous period</p>
+    </div>
+
+    <div class="pastel-card p-5 md:p-6">
+        <div class="flex items-start justify-between gap-3">
+            <div class="min-w-0 pr-1">
+                <p class="text-[9px] md:text-[10px] font-bold text-textMuted uppercase tracking-widest">Primary focus</p>
+                <h3 id="metric-top-activity" class="text-base sm:text-lg md:text-xl font-black leading-tight text-textMain mt-2 break-words">--</h3>
+            </div>
+            <div class="w-10 h-10 rounded-xl bg-[#FFF7E6] text-[#FF9F1C] flex items-center justify-center flex-shrink-0">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" stroke-width="2"></circle><circle cx="12" cy="12" r="4" stroke-width="2"></circle></svg>
+            </div>
+        </div>
+        <p id="metric-top-share" class="text-[10px] font-semibold text-textMuted mt-4">No focus mix yet</p>
+    </div>
+
+    <div class="pastel-card p-5 md:p-6">
+        <div class="flex items-start justify-between gap-3">
+            <div>
+                <p class="text-[9px] md:text-[10px] font-bold text-textMuted uppercase tracking-widest">Open commitments</p>
+                <h3 id="metric-active-tasks" class="text-2xl md:text-3xl font-black text-textMain mt-2">--</h3>
+            </div>
+            <div class="w-10 h-10 rounded-xl bg-[#FFEBF0] text-[#FF2E63] flex items-center justify-center flex-shrink-0">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
+            </div>
+        </div>
+        <a href="/tasks" class="inline-flex text-[10px] font-bold text-brand mt-4 hover:underline">Review task list →</a>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 xl:grid-cols-3 gap-8 mb-10">
+    <section class="pastel-card p-6 md:p-8 xl:col-span-2 animate-slide-up" style="animation-delay: 0.3s;">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
+            <div>
+                <p class="text-[10px] font-bold text-brand uppercase tracking-widest mb-2">Attention pattern</p>
+                <h3 id="chart-title" class="text-xl font-bold text-textMain">Momentum over time</h3>
+                <p id="chart-subtitle" class="text-sm font-medium text-textMuted mt-1">Your logged hours across this period</p>
+            </div>
+            <div class="flex items-center bg-gray-50 p-1 rounded-xl border border-gray-100" role="group" aria-label="Chart view">
+                <button id="btn-chart-line" type="button" aria-pressed="true" onclick="if(typeof setChartType === 'function') setChartType('line')" class="px-3 sm:px-4 py-1.5 rounded-lg text-xs font-bold transition-all bg-white shadow-sm text-brand pointer-events-none flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M3 17l5-5 4 3 8-9"></path></svg>
+                    Trend
+                </button>
+                <button id="btn-chart-doughnut" type="button" aria-pressed="false" onclick="if(typeof setChartType === 'function') setChartType('doughnut')" class="px-3 sm:px-4 py-1.5 rounded-lg text-xs font-bold transition-all text-textMuted hover:text-textMain cursor-pointer flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M12 3a9 9 0 109 9h-9V3z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M15 3.5A9 9 0 0120.5 9H15V3.5z"></path></svg>
+                    Mix
+                </button>
+                <button id="btn-chart-bar" type="button" aria-pressed="false" onclick="if(typeof setChartType === 'function') setChartType('bar')" class="px-3 sm:px-4 py-1.5 rounded-lg text-xs font-bold transition-all text-textMuted hover:text-textMain cursor-pointer flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M5 19V9m7 10V4m7 15v-7"></path></svg>
+                    Compare
+                </button>
+            </div>
+        </div>
+        <div class="chart-container" aria-live="polite">
+            <div id="chart-status-overlay" class="chart-status-overlay">
+                <div>
+                    <span id="chart-status-spinner" class="inline-block w-7 h-7 rounded-full border-[3px] border-brand-light border-t-brand animate-spin mb-3"></span>
+                    <p id="chart-status-title" class="text-sm font-bold text-textMain">Loading report…</p>
+                    <p id="chart-status-copy" class="text-xs font-medium text-textMuted mt-1">This should only take a moment.</p>
+                    <button id="chart-retry-button" type="button" onclick="if(typeof loadChartData === 'function') loadChartData()" class="hidden mt-4 text-xs font-bold text-brand bg-brand-light hover:bg-brand hover:text-white px-4 py-2 rounded-xl transition-colors">Try again</button>
+                </div>
+            </div>
+            <canvas id="analyticsChart"></canvas>
+        </div>
+    </section>
+
+    <aside class="rounded-[24px] bg-gradient-to-br from-[#2B3674] via-[#34258C] to-[#4318FF] p-7 md:p-8 text-white shadow-soft overflow-hidden relative animate-slide-up" style="animation-delay: 0.35s;">
+        <div class="absolute -right-16 -top-16 w-44 h-44 rounded-full bg-white/10"></div>
+        <div class="absolute -left-12 -bottom-14 w-36 h-36 rounded-full bg-accent-mint/20"></div>
+        <div class="relative z-10 flex flex-col h-full">
+            <div class="w-12 h-12 rounded-2xl bg-white/10 border border-white/10 flex items-center justify-center mb-8">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4m6-2l2.3 6.8L22 12l-6.7 2.2L13 21l-2.3-6.8L4 12l6.7-2.2L13 3z"></path></svg>
+            </div>
+            <p class="text-[10px] font-bold text-white/60 uppercase tracking-widest">Read the signal</p>
+            <h3 id="performance-signal-title" class="text-2xl font-black mt-3 leading-tight">Building your picture</h3>
+            <p id="performance-signal-copy" class="text-sm font-medium text-white/70 leading-relaxed mt-4">Your performance story will sharpen as you log focused work.</p>
+
+            <div class="mt-8 pt-6 border-t border-white/10">
+                <div class="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider mb-3">
+                    <span class="text-white/60">Top-focus share</span>
+                    <span id="performance-top-share">0%</span>
+                </div>
+                <div class="h-2 rounded-full bg-white/10 overflow-hidden">
+                    <div id="performance-top-share-bar" class="h-full rounded-full bg-accent-mint transition-all duration-700" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <a href="/" class="mt-auto pt-8 inline-flex items-center gap-2 text-sm font-bold text-white hover:text-accent-mint transition-colors">
+                Turn insight into today
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 12h14m-6-6l6 6-6 6"></path></svg>
+            </a>
+        </div>
+    </aside>
+</div>
+
+<div class="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mb-5 animate-slide-up" style="animation-delay: 0.4s;">
+    <div>
+        <p class="text-[10px] font-bold text-textMuted uppercase tracking-widest">Source data</p>
+        <h3 class="text-2xl font-black text-textMain mt-1">Activity records</h3>
+    </div>
+    <p class="text-xs font-medium text-textMuted">Add or correct logs without losing the analytical context above.</p>
+</div>
+
+<div class="grid grid-cols-1 xl:grid-cols-3 gap-8 pb-10">
+    <section class="pastel-card p-7 md:p-8 animate-slide-up" style="animation-delay: 0.45s;">
+        <div class="flex items-center justify-between mb-7">
+            <div>
+                <h3 class="text-lg font-bold text-textMain">Add a time log</h3>
+                <p class="text-xs font-medium text-textMuted mt-1">Manual entry for work done.</p>
+            </div>
+            <span class="bg-brand-light text-brand text-[9px] font-bold uppercase tracking-widest px-2.5 py-1.5 rounded-full">Quick add</span>
+        </div>
+        <div class="space-y-6">
+            <div class="relative" data-activity-combobox>
+                <div class="input-group">
+                    <input type="text" id="activity" class="input-pastel pr-11" placeholder=" " autocomplete="off" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="activity-suggestions">
+                    <label for="activity" class="label-floating">Activity name</label>
+                    <div class="absolute right-4 top-1/2 -translate-y-1/2 text-textMuted pointer-events-none">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h10M4 18h7"></path></svg>
+                    </div>
+                </div>
+                <div id="activity-suggestions" role="listbox" class="activity-suggestions hidden"></div>
+                <p class="text-[10px] font-medium text-textMuted mt-2 px-1">Choose an existing name to keep reports consistent.</p>
+            </div>
+            <div class="input-group">
+                <input type="number" id="hours" min="0.1" max="24" step="0.5" class="input-pastel" placeholder=" ">
+                <label for="hours" class="label-floating">Duration in hours</label>
+            </div>
+            <button onclick="submitLog()" class="btn-primary w-full flex items-center justify-center gap-3">
+                <span>Save activity</span>
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v14m-7-7h14"></path></svg>
+            </button>
+            <div id="status-msg" class="text-center text-xs font-bold hidden transition-all"></div>
+        </div>
+    </section>
+
+    <section class="pastel-card p-7 md:p-8 xl:col-span-2 animate-slide-up" style="animation-delay: 0.5s;">
+        <div class="flex items-center justify-between mb-6">
+            <div>
+                <h3 class="text-lg font-bold text-textMain">Recent logs</h3>
+                <p class="text-xs font-medium text-textMuted mt-1">Your latest five entries.</p>
+            </div>
+            <button onclick="if(typeof loadRecentLogs === 'function') loadRecentLogs()" class="text-textMuted hover:text-brand transition-colors p-2 bg-gray-50 rounded-xl hover:bg-brand-light" title="Refresh data">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+            </button>
+        </div>
+        <div id="recent-logs-container" class="space-y-3 max-h-[440px] overflow-y-auto pr-2"></div>
+    </section>
+</div>
+
+<div id="edit-log-modal-backdrop" class="fixed inset-0 z-50 flex items-center justify-center bg-textMain/20 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
+    <div id="edit-log-modal-card" class="pastel-card w-full max-w-md p-8 mx-4 transform scale-95 transition-all duration-300 shadow-2xl border border-white">
+        <div class="flex items-center justify-between mb-6">
+            <h3 class="text-xl font-bold text-textMain flex items-center gap-2">
+                <span class="w-2 h-6 rounded-full bg-brand"></span>
+                Edit time log
+            </h3>
+            <button onclick="closeEditLogModal()" class="text-textMuted hover:text-accent-pink transition-colors p-2 rounded-lg hover:bg-red-50" aria-label="Close time log editor">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+        </div>
+        <input type="hidden" id="edit-log-id">
+        <div class="space-y-6">
+            <div class="relative" data-activity-combobox>
+                <div class="input-group">
+                    <input type="text" id="edit-log-activity" class="input-pastel pr-11" placeholder=" " autocomplete="off" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="edit-log-activity-suggestions">
+                    <label for="edit-log-activity" class="label-floating">Activity name</label>
+                    <div class="absolute right-4 top-1/2 -translate-y-1/2 text-textMuted pointer-events-none">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h10M4 18h7"></path></svg>
+                    </div>
+                </div>
+                <div id="edit-log-activity-suggestions" role="listbox" class="activity-suggestions hidden"></div>
+            </div>
+            <div class="input-group">
+                <input type="number" id="edit-log-hours" min="0.1" max="24" step="0.5" class="input-pastel" placeholder=" ">
+                <label for="edit-log-hours" class="label-floating">Duration in hours</label>
+            </div>
+            <div class="flex items-center justify-end gap-3 pt-2">
+                <button onclick="closeEditLogModal()" class="px-5 py-3 rounded-xl font-bold text-sm text-textMuted hover:bg-gray-50 hover:text-textMain transition-colors">Cancel</button>
+                <button onclick="submitEditLog()" class="btn-primary px-6 py-3 shadow-sm hover:shadow-md flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                    Save changes
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="delete-modal-backdrop" class="fixed inset-0 z-50 flex items-center justify-center bg-textMain/20 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
+    <div id="delete-modal-card" class="pastel-card w-full max-w-sm p-8 mx-4 transform scale-95 transition-all duration-300 shadow-2xl border border-white text-center">
+        <div class="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-5 shadow-sm border border-red-100">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+        </div>
+        <h3 class="text-xl font-bold text-textMain mb-2">Delete time log?</h3>
+        <p class="text-sm font-medium text-textMuted mb-8">This entry will be removed permanently and the report will be recalculated.</p>
+        <input type="hidden" id="delete-target-id">
+        <div class="flex items-center justify-center gap-3">
+            <button onclick="closeDeleteModal()" class="px-5 py-3 rounded-xl font-bold text-sm text-textMuted hover:bg-gray-50 hover:text-textMain transition-colors w-full">Cancel</button>
+            <button id="confirm-delete-log-button" onclick="executeDeleteLog()" class="bg-red-700 text-white font-bold text-sm px-5 py-3 rounded-xl shadow-sm hover:shadow-md hover:bg-red-800 transition-all w-full flex items-center justify-center gap-2">Delete</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='activity-autocomplete.js') }}"></script>
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+<script src="{{ url_for('static', filename='charts.js') }}"></script>
+<script src="{{ url_for('static', filename='history.js') }}"></script>
+{% endblock %}

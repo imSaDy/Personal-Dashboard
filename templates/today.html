@@ -1,0 +1,269 @@
+{% extends "base.html" %}
+
+{% block title %}Today // Lumen{% endblock %}
+
+{% block content %}
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-5 mb-8 animate-slide-up" style="animation-delay: 0.1s;">
+    <div>
+        <div class="flex items-center gap-3 mb-1">
+            <span id="today-greeting-icon" class="w-9 h-9 rounded-xl bg-[#FFF7E6] text-[#FF9F1C] flex items-center justify-center">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                </svg>
+            </span>
+            <div>
+                <p id="today-greeting" class="text-[10px] font-bold text-textMuted uppercase tracking-widest">Good morning</p>
+                <h2 class="text-3xl font-bold text-textMain tracking-tight">Today</h2>
+            </div>
+        </div>
+        <p id="today-date-label" class="text-textMuted mt-2 text-sm font-medium">Loading today's plan...</p>
+    </div>
+
+    <div class="flex flex-col sm:flex-row gap-3">
+        <a href="/performance" class="flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-white border border-gray-100 text-sm font-bold text-textMuted hover:text-brand hover:border-brand/20 hover:shadow-card transition-all">
+            View Performance
+        </a>
+        <a href="/timer" class="btn-primary flex items-center justify-center gap-2 px-5 py-3">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            Start a Focus Session
+        </a>
+    </div>
+</div>
+
+<div class="grid grid-cols-2 xl:grid-cols-4 gap-4 md:gap-5 mb-8 animate-slide-up" style="animation-delay: 0.2s;">
+    <div class="pastel-card p-4 sm:p-5 flex items-center gap-3 sm:gap-4">
+        <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-brand-light text-brand flex items-center justify-center flex-shrink-0">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+        </div>
+        <div class="min-w-0">
+            <p class="text-[8px] sm:text-[9px] font-bold leading-tight text-textMuted uppercase tracking-[0.12em] sm:tracking-widest">Focus Logged</p>
+            <p class="text-xl font-black text-textMain mt-0.5"><span id="today-focus-hours">0</span><span class="text-xs text-textMuted ml-1">hrs</span></p>
+        </div>
+    </div>
+
+    <div class="pastel-card p-4 sm:p-5 flex items-center gap-3 sm:gap-4">
+        <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-[#FFF7E6] text-[#FF9F1C] flex items-center justify-center flex-shrink-0">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+            </svg>
+        </div>
+        <div class="min-w-0">
+            <p class="text-[8px] sm:text-[9px] font-bold leading-tight text-textMuted uppercase tracking-[0.12em] sm:tracking-widest">Open Tasks</p>
+            <p id="today-open-tasks" class="text-xl font-black text-textMain mt-0.5">0</p>
+        </div>
+    </div>
+
+    <div class="pastel-card p-4 sm:p-5 flex items-center gap-3 sm:gap-4">
+        <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-accent-mintLight text-accent-mint flex items-center justify-center flex-shrink-0">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path>
+            </svg>
+        </div>
+        <div class="min-w-0">
+            <p class="text-[8px] sm:text-[9px] font-bold leading-tight text-textMuted uppercase tracking-[0.12em] sm:tracking-widest">Routines</p>
+            <p class="text-xl font-black text-textMain mt-0.5"><span id="today-routines-done">0</span><span id="today-routines-total" class="text-xs text-textMuted ml-1">/ 0</span></p>
+        </div>
+    </div>
+
+    <div class="pastel-card p-4 sm:p-5 flex items-center gap-3 sm:gap-4">
+        <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-[#FFEBF0] text-[#FF2E63] flex items-center justify-center flex-shrink-0">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="9" stroke-width="2"></circle>
+                <circle cx="12" cy="12" r="5" stroke-width="2"></circle>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 12l6-6"></path>
+            </svg>
+        </div>
+        <div class="min-w-0">
+            <p class="text-[8px] sm:text-[9px] font-bold leading-tight text-textMuted uppercase tracking-[0.12em] sm:tracking-widest">Daily Goal</p>
+            <p class="text-xl font-black text-textMain mt-0.5"><span id="today-goal-progress">--</span><span class="text-xs text-textMuted ml-0.5">%</span></p>
+        </div>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 xl:grid-cols-3 gap-8 mb-8">
+    <div class="xl:col-span-2 space-y-8">
+        <section class="pastel-card p-6 md:p-8 animate-slide-up" style="animation-delay: 0.3s;">
+            <div class="flex items-center justify-between gap-4 mb-6">
+                <div>
+                    <h3 class="text-xl font-bold text-textMain">Next actions</h3>
+                    <p class="text-sm font-medium text-textMuted mt-1">The most useful tasks to move today forward.</p>
+                </div>
+                <a href="/tasks" class="text-xs font-bold text-brand bg-brand-light hover:bg-brand hover:text-white transition-colors px-3 py-2 rounded-xl whitespace-nowrap">View all</a>
+            </div>
+            <div id="today-task-list" class="space-y-3">
+                <div class="py-10 text-center text-sm font-semibold text-textMuted">Loading tasks...</div>
+            </div>
+        </section>
+
+        <section class="pastel-card p-6 md:p-8 animate-slide-up" style="animation-delay: 0.4s;">
+            <div class="flex items-center justify-between gap-4 mb-6">
+                <div>
+                    <h3 class="text-xl font-bold text-textMain">Daily rhythm</h3>
+                    <p class="text-sm font-medium text-textMuted mt-1">Keep your routines moving without leaving this page.</p>
+                </div>
+                <a href="/habits" class="text-xs font-bold text-textMuted hover:text-brand transition-colors whitespace-nowrap">Manage routines →</a>
+            </div>
+            <div id="today-routine-list" class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div class="md:col-span-2 py-10 text-center text-sm font-semibold text-textMuted">Loading routines...</div>
+            </div>
+        </section>
+    </div>
+
+    <aside class="animate-slide-up" style="animation-delay: 0.35s;">
+        <section class="pastel-card p-7 overflow-hidden relative">
+            <div class="absolute -right-16 -top-16 w-40 h-40 rounded-full bg-brand-light opacity-70 pointer-events-none"></div>
+            <div class="relative z-10">
+                <div class="flex items-center gap-3 mb-6">
+                    <div class="w-11 h-11 rounded-2xl bg-brand text-white flex items-center justify-center shadow-lg shadow-brand/20">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <circle cx="12" cy="12" r="9" stroke-width="2"></circle>
+                            <circle cx="12" cy="12" r="5" stroke-width="2"></circle>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 12l6.5-6.5M15 5.5h3.5V9"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-bold text-textMuted uppercase tracking-widest">Direction</p>
+                        <h3 class="text-lg font-bold text-textMain">Goal of the day</h3>
+                    </div>
+                </div>
+
+                <label for="today-goal-selector" class="block text-[10px] font-bold text-textMuted uppercase tracking-widest mb-2 ml-1">Choose your focus</label>
+                <select id="today-goal-selector" onchange="selectTodayGoal()" class="input-pastel mb-6">
+                    <option value="">No goal selected</option>
+                </select>
+
+                <div id="today-focus-goal-card">
+                    <div class="rounded-2xl border border-dashed border-gray-200 bg-gray-50/70 p-6 text-center">
+                        <div class="w-12 h-12 rounded-2xl bg-white text-textMuted flex items-center justify-center mx-auto mb-3 shadow-sm">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                            </svg>
+                        </div>
+                        <p class="text-sm font-bold text-textMain">Pick one clear direction</p>
+                        <p class="text-xs font-medium text-textMuted mt-1">Your selected goal will stay here for the day.</p>
+                    </div>
+                </div>
+
+                <a href="/goals" class="mt-5 flex items-center justify-center gap-2 text-xs font-bold text-brand hover:bg-brand-light rounded-xl py-3 transition-colors">
+                    Open Goals
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
+                </a>
+            </div>
+        </section>
+    </aside>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8 pb-10">
+    <section class="pastel-card p-6 md:p-8 lg:col-span-2 animate-slide-up" style="animation-delay: 0.45s;">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-5 mb-7">
+            <div class="flex items-center gap-3">
+                <div class="w-11 h-11 rounded-2xl bg-[#FFF7E6] text-[#FF9F1C] flex items-center justify-center">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 20h9"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16.5 3.5a2.121 2.121 0 013 3L8 18l-4 1 1-4L16.5 3.5z"></path>
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold text-textMain">Daily Journal</h3>
+                    <p class="text-sm font-medium text-textMuted mt-0.5">A quiet check-in, saved by date.</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2">
+                <button onclick="changeJournalDay(-1)" class="w-10 h-10 rounded-xl bg-gray-50 text-textMuted hover:text-brand hover:bg-brand-light transition-colors flex items-center justify-center" title="Previous day">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"></path>
+                    </svg>
+                </button>
+                <input type="date" id="journal-date" aria-label="Journal date" onchange="handleJournalDateChange()" class="bg-gray-50 border border-gray-100 text-textMain text-xs font-bold rounded-xl px-3 h-10 outline-none focus:ring-4 focus:ring-brand-light focus:border-brand/20">
+                <button onclick="changeJournalDay(1)" class="w-10 h-10 rounded-xl bg-gray-50 text-textMuted hover:text-brand hover:bg-brand-light transition-colors flex items-center justify-center" title="Next day">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <div class="space-y-5">
+            <div>
+                <label for="journal-focus-note" class="flex items-center gap-2 text-xs font-bold text-textMain mb-2">
+                    <span class="w-7 h-7 rounded-lg bg-brand-light text-brand flex items-center justify-center">1</span>
+                    What deserves my focus today?
+                </label>
+                <textarea id="journal-focus-note" maxlength="1500" class="journal-textarea" placeholder="Name the one thing that would make today meaningful..." oninput="scheduleJournalSave()"></textarea>
+            </div>
+
+            <div>
+                <label for="journal-win-note" class="flex items-center gap-2 text-xs font-bold text-textMain mb-2">
+                    <span class="w-7 h-7 rounded-lg bg-accent-mintLight text-accent-mint flex items-center justify-center">2</span>
+                    What went well?
+                </label>
+                <textarea id="journal-win-note" maxlength="1500" class="journal-textarea" placeholder="Capture a win, a lesson, or a moment worth remembering..." oninput="scheduleJournalSave()"></textarea>
+            </div>
+
+            <div>
+                <label for="journal-tomorrow-note" class="flex items-center gap-2 text-xs font-bold text-textMain mb-2">
+                    <span class="w-7 h-7 rounded-lg bg-[#FFF7E6] text-[#FF9F1C] flex items-center justify-center">3</span>
+                    What is tomorrow's most important move?
+                </label>
+                <textarea id="journal-tomorrow-note" maxlength="1500" class="journal-textarea" placeholder="Leave your future self a clear starting point..." oninput="scheduleJournalSave()"></textarea>
+            </div>
+        </div>
+
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mt-6 pt-5 border-t border-gray-100">
+            <div class="flex items-center gap-2">
+                <span id="journal-save-dot" class="w-2 h-2 rounded-full bg-gray-300"></span>
+                <p id="journal-save-status" class="text-xs font-semibold text-textMuted">Ready to write</p>
+            </div>
+            <div class="flex items-center gap-3">
+                <button onclick="goToJournalToday()" class="text-xs font-bold text-textMuted hover:text-brand transition-colors px-3 py-2">Jump to today</button>
+                <button id="journal-save-button" onclick="saveJournalEntry()" class="btn-primary px-5 py-2.5 text-sm flex items-center justify-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                    Save Entry
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <aside class="pastel-card p-6 md:p-7 animate-slide-up h-fit" style="animation-delay: 0.5s;">
+        <div class="flex items-center justify-between mb-6">
+            <div>
+                <h3 class="text-lg font-bold text-textMain">Recent reflections</h3>
+                <p class="text-xs font-medium text-textMuted mt-1">Your last seven entries.</p>
+            </div>
+            <div class="w-10 h-10 rounded-xl bg-gray-50 text-textMuted flex items-center justify-center">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 21v-8H7v8M7 3v5h8"></path>
+                </svg>
+            </div>
+        </div>
+        <div id="recent-journal-list" class="space-y-3">
+            <div class="py-10 text-center text-xs font-semibold text-textMuted">Loading reflections...</div>
+        </div>
+    </aside>
+</div>
+
+<div id="today-toast" class="fixed right-6 bottom-6 z-[80] translate-y-6 opacity-0 pointer-events-none transition-all duration-300">
+    <div id="today-toast-card" class="bg-textMain text-white rounded-2xl shadow-2xl px-5 py-3.5 flex items-center gap-3">
+        <span class="w-7 h-7 rounded-full bg-white/10 flex items-center justify-center">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
+            </svg>
+        </span>
+        <span id="today-toast-message" class="text-sm font-bold">Saved</span>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='today.js') }}"></script>
+{% endblock %}

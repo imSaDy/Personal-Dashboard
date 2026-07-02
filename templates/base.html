@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Lumen // Dashboard{% endblock %}</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='lumen-icon.png') }}">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='lumen-icon.png') }}">
+        
+    <script src="{{ url_for('static', filename='chart.min.js') }}"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='tailwind-built.css') }}">
+</head>
+
+<body class="bg-canvas text-textMain font-sans min-h-screen flex antialiased selection:bg-brand selection:text-white overflow-hidden">
+
+    <nav class="w-20 lg:w-[280px] bg-surface border-r border-gray-100 flex flex-col justify-between hidden md:flex z-50 shadow-soft transition-all duration-300">
+        
+        <div class="flex flex-col h-full">
+            <div class="h-24 flex items-center px-8 border-b border-gray-50/50">
+                <a href="/" class="flex items-center gap-3 group outline-none">
+                    <img src="{{ url_for('static', filename='lumen-icon.png') }}" alt="" class="w-10 h-10 object-contain group-hover:scale-105 group-hover:-translate-y-0.5 transition-all duration-300">
+                    <h1 class="text-2xl font-black text-textMain tracking-tight hidden lg:block">Lumen</h1>
+                </a>
+            </div>
+            
+            <div class="flex-1 px-4 py-8 overflow-y-auto">
+                <p class="px-4 text-xs font-bold text-textMuted uppercase tracking-wider mb-4 hidden lg:block">Main Menu</p>
+                <ul class="space-y-2">
+                    
+                    <li>
+                        <a href="/" class="flex items-center gap-4 px-4 py-3.5 rounded-xl transition-all duration-200 group relative
+                            {{ 'bg-brand-light text-brand font-semibold' if request.path in ['/', '/today'] else 'text-textMuted hover:bg-gray-50 hover:text-textMain font-medium' }}">
+                            
+                            {% if request.path in ['/', '/today'] %}
+                                <div class="absolute left-0 top-2 bottom-2 w-1 bg-brand rounded-r-full"></div>
+                            {% endif %}
+                            
+                            <svg class="w-6 h-6 transition-colors {{ 'text-brand' if request.path in ['/', '/today'] else 'text-textMuted group-hover:text-brand' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M8 15l2 2 5-5"></path>
+                            </svg>
+                            <span class="hidden lg:block">Today</span>
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="/performance" class="flex items-center gap-4 px-4 py-3.5 rounded-xl transition-all duration-200 group relative
+                            {{ 'bg-brand-light text-brand font-semibold' if request.path in ['/performance', '/overview'] else 'text-textMuted hover:bg-gray-50 hover:text-textMain font-medium' }}">
+
+                            {% if request.path in ['/performance', '/overview'] %}
+                                <div class="absolute left-0 top-2 bottom-2 w-1 bg-brand rounded-r-full"></div>
+                            {% endif %}
+
+                            <svg class="w-6 h-6 transition-colors {{ 'text-brand' if request.path in ['/performance', '/overview'] else 'text-textMuted group-hover:text-brand' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M4 19V9m5 10V5m5 14v-7m5 7V3"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M3 19h18"></path>
+                            </svg>
+                            <span class="hidden lg:block">Performance</span>
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="/habits" class="flex items-center gap-4 px-4 py-3.5 rounded-xl transition-all duration-200 group relative
+                            {{ 'bg-brand-light text-brand font-semibold' if request.path == '/habits' else 'text-textMuted hover:bg-gray-50 hover:text-textMain font-medium' }}">
+                            
+                            {% if request.path == '/habits' %}
+                                <div class="absolute left-0 top-2 bottom-2 w-1 bg-brand rounded-r-full"></div>
+                            {% endif %}
+                            
+                            <svg class="w-6 h-6 transition-colors {{ 'text-brand' if request.path == '/habits' else 'text-textMuted group-hover:text-brand' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span class="hidden lg:block">Daily Routines</span>
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="/tasks" class="flex items-center gap-4 px-4 py-3.5 rounded-xl transition-all duration-200 group relative
+                            {{ 'bg-brand-light text-brand font-semibold' if request.path == '/tasks' else 'text-textMuted hover:bg-gray-50 hover:text-textMain font-medium' }}">
+                            
+                            {% if request.path == '/tasks' %}
+                                <div class="absolute left-0 top-2 bottom-2 w-1 bg-brand rounded-r-full"></div>
+                            {% endif %}
+                            
+                            <svg class="w-6 h-6 transition-colors {{ 'text-brand' if request.path == '/tasks' else 'text-textMuted group-hover:text-brand' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                            </svg>
+                            <span class="hidden lg:block">Task Manager</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/timer" class="flex items-center gap-4 px-4 py-3.5 rounded-xl transition-all duration-200 group relative
+                            {{ 'bg-brand-light text-brand font-semibold' if request.path == '/timer' else 'text-textMuted hover:bg-gray-50 hover:text-textMain font-medium' }}">
+                            
+                            {% if request.path == '/timer' %}
+                                <div class="absolute left-0 top-2 bottom-2 w-1 bg-brand rounded-r-full"></div>
+                            {% endif %}
+                            
+                            <svg class="w-6 h-6 transition-colors {{ 'text-brand' if request.path == '/timer' else 'text-textMuted group-hover:text-brand' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32l1.41 1.41M2 12h2m16 0h2M4.93 19.07l1.41-1.41m11.32-11.32l1.41-1.41" />
+                            </svg>
+                            <span class="hidden lg:block">Focus Timer</span>
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="/planner" class="flex items-center gap-4 px-4 py-3.5 rounded-xl transition-all duration-200 group relative
+                            {{ 'bg-brand-light text-brand font-semibold' if request.path == '/planner' else 'text-textMuted hover:bg-gray-50 hover:text-textMain font-medium' }}">
+
+                            {% if request.path == '/planner' %}
+                                <div class="absolute left-0 top-2 bottom-2 w-1 bg-brand rounded-r-full"></div>
+                            {% endif %}
+
+                            <svg class="w-6 h-6 transition-colors {{ 'text-brand' if request.path == '/planner' else 'text-textMuted group-hover:text-brand' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M7 3v3m10-3v3M5 10h4v4H5v-4zm6 0h8m-8 4h8M5 17h4v4H5v-4zm6 2h8"></path>
+                            </svg>
+                            <span class="hidden lg:block">Day Planner</span>
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="/goals" class="flex items-center gap-4 px-4 py-3.5 rounded-xl transition-all duration-200 group relative
+                            {{ 'bg-brand-light text-brand font-semibold' if request.path == '/goals' else 'text-textMuted hover:bg-gray-50 hover:text-textMain font-medium' }}">
+
+                            {% if request.path == '/goals' %}
+                                <div class="absolute left-0 top-2 bottom-2 w-1 bg-brand rounded-r-full"></div>
+                            {% endif %}
+
+                            <svg class="w-6 h-6 transition-colors {{ 'text-brand' if request.path == '/goals' else 'text-textMuted group-hover:text-brand' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <circle cx="12" cy="12" r="9"></circle>
+                                <circle cx="12" cy="12" r="5"></circle>
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 12l6.5-6.5M15 5.5h3.5V9"></path>
+                            </svg>
+                            <span class="hidden lg:block">Goals</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            
+            <div class="p-8 border-t border-gray-100 bg-gray-50/50">
+                <div class="flex items-center gap-3 mb-2">
+                    <div class="relative flex h-3 w-3">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent-mint opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-3 w-3 bg-accent-mint"></span>
+                    </div>
+                    <p class="text-xs font-bold text-textMuted uppercase tracking-wider hidden lg:block">System Online</p>
+                </div>
+                <p class="text-textMain text-xl font-bold hidden lg:block tracking-tight" id="digital-clock">00:00</p>
+            </div>
+        </div>
+    </nav>
+
+    <div class="flex-1 flex flex-col relative h-screen overflow-hidden">
+        
+        <header class="h-24 bg-canvas/80 backdrop-blur-md px-4 sm:px-8 flex items-center gap-3 sm:gap-4 z-40 sticky top-0">
+
+            <a href="/" class="md:hidden w-11 h-11 flex-shrink-0" aria-label="Open Today">
+                <img src="{{ url_for('static', filename='lumen-icon.png') }}" alt="" class="w-full h-full object-contain">
+            </a>
+
+            <div class="hidden sm:block relative flex-1 max-w-xl mr-auto">
+                <div id="quick-capture-shell" class="h-14 bg-surface rounded-full border border-gray-100/60 shadow-sm flex items-center px-2 pl-4 transition-all duration-300 focus-within:shadow-md focus-within:border-brand/20 focus-within:ring-4 focus-within:ring-brand-light">
+                    <div class="w-8 h-8 rounded-full bg-brand-light text-brand flex items-center justify-center flex-shrink-0">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                        </svg>
+                    </div>
+                    <input
+                        id="quick-task-input"
+                        type="text"
+                        maxlength="120"
+                        class="min-w-0 flex-1 bg-transparent border-0 outline-none text-sm font-semibold text-textMain placeholder:text-textMuted px-3"
+                        placeholder="Quick-add a task..."
+                        aria-label="Quick-add a task"
+                        onkeydown="if(event.key === 'Enter') submitQuickTask()"
+                    >
+                    <button id="quick-task-button" onclick="submitQuickTask()" class="w-10 h-10 rounded-full bg-brand text-white flex items-center justify-center hover:bg-brand/90 hover:scale-105 transition-all shadow-md shadow-brand/20 flex-shrink-0" title="Capture task">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path>
+                        </svg>
+                    </button>
+                </div>
+
+                <div id="quick-capture-status" class="absolute left-5 top-full mt-2 bg-textMain text-white text-xs font-bold px-3 py-2 rounded-xl shadow-lg opacity-0 invisible translate-y-1 transition-all duration-200 pointer-events-none whitespace-nowrap">
+                    Task captured
+                </div>
+            </div>
+            
+            <div id="momentum-streak-container" class="relative flex items-center gap-4 bg-surface px-4 py-2.5 rounded-full shadow-sm border border-gray-100/50 cursor-pointer transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 ml-auto group">
+                <div class="hidden sm:flex flex-col text-right pr-3 border-r border-gray-100">
+                    <p class="text-[10px] font-bold text-textMuted uppercase tracking-widest leading-none mb-1 text-right">7-Day Streak</p>
+                    <p class="text-sm font-black text-textMain leading-none"><span id="streak-score-text">--%</span></p>
+                </div>
+                <div class="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center border border-gray-100 shadow-inner group-hover:bg-white transition-colors duration-300">
+                    <svg id="streak-fire-icon" class="w-5 h-5 text-gray-300 transition-colors duration-500" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M17.66 11.2C17.43 10.9 17.15 10.64 16.89 10.38C16.22 9.78 15.46 9.35 14.82 8.72C13.33 7.26 12.81 5.04 13.54 3.06C13.6 2.89 13.55 2.69 13.41 2.57C13.28 2.45 13.08 2.44 12.93 2.53C10.87 3.82 9.29 5.86 8.74 8.21C8.42 9.6 8.65 11.05 9.36 12.27C9.43 12.39 9.4 12.55 9.29 12.64C9.17 12.72 9 12.71 8.89 12.61C7.86 11.69 7.42 10.27 7.74 8.94C7.79 8.71 7.63 8.49 7.39 8.48C6.1 8.35 4.89 8.98 4.14 10.05C2.69 12.13 2.5 15.01 3.85 17.27C5.06 19.33 7.31 20.73 9.75 20.94C12.42 21.18 15.18 20.25 17.06 18.25C19.14 16.03 19.72 12.75 18.33 10.08L18.32 10.07C18.15 9.72 17.93 9.41 17.66 11.2ZM12.79 18.29C11.53 18.73 10.15 18.25 9.48 17.12C9.28 16.78 9.17 16.39 9.17 15.99C9.17 15.22 9.53 14.51 10.12 14.04C10.84 13.46 11.3 12.56 11.32 11.59C11.32 11.52 11.34 11.45 11.39 11.4C11.44 11.36 11.5 11.35 11.56 11.37C12.74 11.83 13.56 12.92 13.68 14.19C13.72 14.61 13.92 14.99 14.24 15.26C14.86 15.78 15.13 16.63 14.88 17.41C14.68 18.01 14.18 18.49 13.58 18.66L12.79 18.29Z" />
+                    </svg>
+                </div>
+
+                <div class="absolute top-full mt-3 right-0 w-64 bg-white rounded-2xl shadow-[0px_18px_40px_rgba(112,144,176,0.12)] border border-gray-100 p-5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform translate-y-2 group-hover:translate-y-0 z-50 pointer-events-none text-left">
+                    <p class="text-[11px] font-bold text-textMuted uppercase tracking-wider mb-4">Consistency Guide</p>
+                    <div class="space-y-3.5">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-full bg-red-50 flex items-center justify-center flex-shrink-0 border border-red-100">
+                                <svg class="w-4 h-4 text-red-500 animate-flame-red" fill="currentColor" viewBox="0 0 24 24"><path d="M17.66 11.2C17.43 10.9 17.15 10.64 16.89 10.38C16.22 9.78 15.46 9.35 14.82 8.72C13.33 7.26 12.81 5.04 13.54 3.06C13.6 2.89 13.55 2.69 13.41 2.57C13.28 2.45 13.08 2.44 12.93 2.53C10.87 3.82 9.29 5.86 8.74 8.21C8.42 9.6 8.65 11.05 9.36 12.27C9.43 12.39 9.4 12.55 9.29 12.64C9.17 12.72 9 12.71 8.89 12.61C7.86 11.69 7.42 10.27 7.74 8.94C7.79 8.71 7.63 8.49 7.39 8.48C6.1 8.35 4.89 8.98 4.14 10.05C2.69 12.13 2.5 15.01 3.85 17.27C5.06 19.33 7.31 20.73 9.75 20.94C12.42 21.18 15.18 20.25 17.06 18.25C19.14 16.03 19.72 12.75 18.33 10.08L18.32 10.07C18.15 9.72 17.93 9.41 17.66 11.2Z" /></svg>
+                            </div>
+                            <div>
+                                <p class="text-sm font-bold text-textMain leading-tight">Blazing</p>
+                                <p class="text-[10px] font-semibold text-textMuted uppercase tracking-wider mt-0.5">80% - 100%</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-full bg-orange-50 flex items-center justify-center flex-shrink-0 border border-orange-100">
+                                <svg class="w-4 h-4 text-[#FF9F1C] animate-flame-orange" fill="currentColor" viewBox="0 0 24 24"><path d="M17.66 11.2C17.43 10.9 17.15 10.64 16.89 10.38C16.22 9.78 15.46 9.35 14.82 8.72C13.33 7.26 12.81 5.04 13.54 3.06C13.6 2.89 13.55 2.69 13.41 2.57C13.28 2.45 13.08 2.44 12.93 2.53C10.87 3.82 9.29 5.86 8.74 8.21C8.42 9.6 8.65 11.05 9.36 12.27C9.43 12.39 9.4 12.55 9.29 12.64C9.17 12.72 9 12.71 8.89 12.61C7.86 11.69 7.42 10.27 7.74 8.94C7.79 8.71 7.63 8.49 7.39 8.48C6.1 8.35 4.89 8.98 4.14 10.05C2.69 12.13 2.5 15.01 3.85 17.27C5.06 19.33 7.31 20.73 9.75 20.94C12.42 21.18 15.18 20.25 17.06 18.25C19.14 16.03 19.72 12.75 18.33 10.08L18.32 10.07C18.15 9.72 17.93 9.41 17.66 11.2Z" /></svg>
+                            </div>
+                            <div>
+                                <p class="text-sm font-bold text-textMain leading-tight">Warming Up</p>
+                                <p class="text-[10px] font-semibold text-textMuted uppercase tracking-wider mt-0.5">40% - 79%</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center border border-gray-100 flex-shrink-0">
+                                <svg class="w-4 h-4 text-gray-300" fill="currentColor" viewBox="0 0 24 24"><path d="M17.66 11.2C17.43 10.9 17.15 10.64 16.89 10.38C16.22 9.78 15.46 9.35 14.82 8.72C13.33 7.26 12.81 5.04 13.54 3.06C13.6 2.89 13.55 2.69 13.41 2.57C13.28 2.45 13.08 2.44 12.93 2.53C10.87 3.82 9.29 5.86 8.74 8.21C8.42 9.6 8.65 11.05 9.36 12.27C9.43 12.39 9.4 12.55 9.29 12.64C9.17 12.72 9 12.71 8.89 12.61C7.86 11.69 7.42 10.27 7.74 8.94C7.79 8.71 7.63 8.49 7.39 8.48C6.1 8.35 4.89 8.98 4.14 10.05C2.69 12.13 2.5 15.01 3.85 17.27C5.06 19.33 7.31 20.73 9.75 20.94C12.42 21.18 15.18 20.25 17.06 18.25C19.14 16.03 19.72 12.75 18.33 10.08L18.32 10.07C18.15 9.72 17.93 9.41 17.66 11.2Z" /></svg>
+                            </div>
+                            <div>
+                                <p class="text-sm font-bold text-textMain leading-tight">Building Habit</p>
+                                <p class="text-[10px] font-semibold text-textMuted uppercase tracking-wider mt-0.5">0% - 39%</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </header>
+
+        <main class="flex-1 overflow-y-auto px-6 pb-12 lg:px-10 scroll-smooth">
+            <div class="max-w-7xl mx-auto pt-4">
+                {% block content %}{% endblock %}
+            </div>
+        </main>
+    </div>
+
+    <a
+        id="schedule-live-pill"
+        href="/timer"
+        class="schedule-live-pill hidden"
+        aria-label="Open the active scheduled timer"
+    >
+        <span class="schedule-live-icon" aria-hidden="true">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="9" stroke-width="2"></circle>
+                <path stroke-linecap="round" stroke-width="2" d="M12 7v5l3 2"></path>
+            </svg>
+        </span>
+        <span class="min-w-0">
+            <span id="schedule-live-mode" class="block text-[9px] font-black uppercase tracking-widest truncate">Focus running</span>
+            <span id="schedule-live-label" class="block text-[10px] font-semibold opacity-70 truncate">Scheduled session</span>
+        </span>
+        <span id="schedule-live-countdown" class="font-black tabular-nums text-sm ml-2">00:00</span>
+    </a>
+
+    <script>
+        // Cross-Page background audio player routine
+        function globalTriggerBeep(beepsRemaining) {
+            if (beepsRemaining <= 0) return;
+            let audio = new Audio('/static/beep.mp3');
+            audio.play()
+                .then(() => {
+                    setTimeout(() => globalTriggerBeep(beepsRemaining - 1), 350);
+                })
+                .catch(e => console.log("Audio context blocked by browser policies."));
+        }
+
+        // Shared Global Layout Engine Interval Ticker
+        setInterval(() => {
+            const now = new Date();
+            
+            // 1. Digital Clock Logic
+            const clockEl = document.getElementById('digital-clock');
+            if(clockEl) clockEl.innerText = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+            
+            // 2. Cross-Page Background Timer Check
+            // We only track this if the user is NOT on the /timer page (to prevent double alarms playing)
+            if (window.location.pathname !== '/timer') {
+                const globalIsRunning = localStorage.getItem('timer_is_running') === 'true';
+                if (globalIsRunning) {
+                    const globalEndTime = parseInt(localStorage.getItem('timer_end_time'), 10) || 0;
+                    if (Date.now() >= globalEndTime) {
+                        localStorage.setItem('timer_is_running', 'false');
+                        localStorage.setItem('timer_remaining_seconds', '0');
+                        globalTriggerBeep(3);
+                    }
+                }
+            }
+        }, 1000);
+    </script>
+    
+    <script src="{{ url_for('static', filename='quick-capture.js') }}"></script>
+    <script src="{{ url_for('static', filename='streak.js') }}"></script>
+    <script src="{{ url_for('static', filename='schedule-runner.js') }}"></script>
+    <script src="{{ url_for('static', filename='modal-a11y.js') }}"></script>
+    
+    {% block scripts %}{% endblock %}
+</body>
+</html>

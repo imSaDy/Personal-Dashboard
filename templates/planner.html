@@ -1,0 +1,547 @@
+{% extends "base.html" %}
+
+{% block title %}Day Planner // Lumen{% endblock %}
+
+{% block content %}
+<div class="animate-slide-up mb-6" style="animation-delay: 0.05s;">
+    <div class="flex flex-col xl:flex-row xl:items-end justify-between gap-5">
+        <div>
+            <div class="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-brand bg-brand-light px-3 py-1.5 rounded-full mb-3">
+                <span class="relative flex h-2 w-2">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand opacity-40"></span>
+                    <span class="relative inline-flex rounded-full h-2 w-2 bg-brand"></span>
+                </span>
+                Automated day flow
+            </div>
+            <h2 class="text-3xl md:text-4xl font-black text-textMain tracking-tight">Plan once. Flow all day.</h2>
+            <p class="text-textMuted mt-2 text-sm font-medium max-w-2xl">Shape tomorrow into focus and recovery blocks. Lumen will switch and start each timer when its time arrives.</p>
+        </div>
+
+        <div class="inline-flex items-center bg-white border border-gray-100 rounded-2xl p-1.5 shadow-sm self-start xl:self-auto" role="group" aria-label="Choose schedule day">
+            <button id="planner-day-today" type="button" onclick="selectPlannerDay('today')" aria-pressed="false" class="planner-day-button text-textMuted">
+                <span class="block text-[9px] uppercase tracking-wider">Live</span>
+                <span class="block mt-0.5">Today</span>
+            </button>
+            <button id="planner-day-tomorrow" type="button" onclick="selectPlannerDay('tomorrow')" aria-pressed="true" class="planner-day-button is-active">
+                <span class="block text-[9px] uppercase tracking-wider">Build</span>
+                <span class="block mt-0.5">Tomorrow</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<section class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6 animate-slide-up" style="animation-delay: 0.1s;" aria-label="Plan summary">
+    <div class="pastel-card p-4 md:p-5">
+        <div class="w-9 h-9 rounded-xl bg-brand-light text-brand flex items-center justify-center mb-4">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"></path></svg>
+        </div>
+        <p class="text-[9px] font-black text-textMuted uppercase tracking-widest">Sessions</p>
+        <p id="planner-stat-sessions" class="text-2xl font-black text-textMain mt-1">0</p>
+    </div>
+    <div class="pastel-card p-4 md:p-5">
+        <div class="w-9 h-9 rounded-xl bg-brand-light text-brand flex items-center justify-center mb-4">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 3L4 14h7v7l9-11h-7V3z"></path></svg>
+        </div>
+        <p class="text-[9px] font-black text-textMuted uppercase tracking-widest">Deep work</p>
+        <p id="planner-stat-focus" class="text-2xl font-black text-textMain mt-1">0m</p>
+    </div>
+    <div class="pastel-card p-4 md:p-5">
+        <div class="w-9 h-9 rounded-xl bg-accent-mintLight text-accent-mint flex items-center justify-center mb-4">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-width="2" d="M5 12h14M12 5v14"></path></svg>
+        </div>
+        <p class="text-[9px] font-black text-textMuted uppercase tracking-widest">Recovery</p>
+        <p id="planner-stat-breaks" class="text-2xl font-black text-textMain mt-1">0m</p>
+    </div>
+    <div class="pastel-card p-4 md:p-5">
+        <div class="w-9 h-9 rounded-xl bg-orange-50 text-[#F59E0B] flex items-center justify-center mb-4">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" stroke-width="2"></circle><path stroke-linecap="round" stroke-width="2" d="M12 7v5l3 2"></path></svg>
+        </div>
+        <p class="text-[9px] font-black text-textMuted uppercase tracking-widest">Day span</p>
+        <p id="planner-stat-span" class="text-sm sm:text-lg md:text-xl font-black leading-tight text-textMain mt-1 break-words">—</p>
+    </div>
+</section>
+
+<div class="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
+    <aside class="xl:col-span-4 space-y-5 animate-slide-up" style="animation-delay: 0.16s;">
+        <div class="pastel-card p-5 md:p-6">
+            <div class="flex items-start justify-between gap-4 mb-6">
+                <div>
+                    <p class="text-[9px] font-black text-brand uppercase tracking-[0.18em]">Session builder</p>
+                    <h3 id="planner-form-title" class="text-xl font-black text-textMain mt-1">Add a time block</h3>
+                </div>
+            </div>
+
+            <div class="space-y-5">
+                <div>
+                    <p class="block text-[10px] font-black text-textMuted uppercase tracking-wider mb-2">Timer type</p>
+                    <div class="grid grid-cols-3 gap-2" role="group" aria-label="Timer type">
+                        <button id="planner-mode-work" type="button" onclick="selectPlannerMode('work')" aria-pressed="true" class="planner-mode-button is-active planner-mode-work">
+                            <span class="planner-mode-icon">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 3L4 14h7v7l9-11h-7V3z"></path></svg>
+                            </span>
+                            <span>Focus</span>
+                        </button>
+                        <button id="planner-mode-short" type="button" onclick="selectPlannerMode('short')" aria-pressed="false" class="planner-mode-button planner-mode-short">
+                            <span class="planner-mode-icon">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-width="2" d="M5 12h14M12 5v14"></path></svg>
+                            </span>
+                            <span>Short</span>
+                        </button>
+                        <button id="planner-mode-long" type="button" onclick="selectPlannerMode('long')" aria-pressed="false" class="planner-mode-button planner-mode-long">
+                            <span class="planner-mode-icon">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 8A6 6 0 116 8c0-2 1-4 3-5m6 0c2 1 3 3 3 5"></path></svg>
+                            </span>
+                            <span>Long</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <input id="planner-label" type="text" maxlength="80" class="input-pastel" placeholder=" ">
+                    <label for="planner-label" class="label-floating">Label (optional)</label>
+                </div>
+
+                <div class="planner-edit-time-range" aria-label="New session time range">
+                    <section id="planner-start-control" class="planner-edit-time-control planner-edit-time-start">
+                        <input id="planner-start-time" type="hidden" value="09:00">
+                        <div class="planner-edit-time-heading">
+                            <span class="planner-edit-time-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                    <circle cx="12" cy="12" r="8" stroke-width="2"></circle>
+                                    <path d="M12 8v4l3 2" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+                                </svg>
+                            </span>
+                            <span class="min-w-0 flex-1">
+                                <span class="planner-edit-time-title">Starts at</span>
+                                <span class="planner-edit-time-copy">Beginning of the new block</span>
+                            </span>
+                            <strong id="planner-start-summary" class="planner-edit-time-summary">9:00 AM</strong>
+                        </div>
+                        <div class="planner-edit-time-picker">
+                            <button type="button" class="planner-edit-time-nudge" onclick="nudgePlannerFormTime('start', -15)" aria-label="Move start time 15 minutes earlier">−15</button>
+                            <label class="planner-edit-time-part">
+                                <span>Hour</span>
+                                <span class="planner-edit-time-select-shell">
+                                    <select id="planner-start-hour" onchange="syncPlannerFormTimeFromParts('start')" aria-label="New block start hour"></select>
+                                </span>
+                            </label>
+                            <span class="planner-edit-time-colon" aria-hidden="true">:</span>
+                            <label class="planner-edit-time-part">
+                                <span>Minute</span>
+                                <span class="planner-edit-time-select-shell">
+                                    <select id="planner-start-minute" onchange="syncPlannerFormTimeFromParts('start')" aria-label="New block start minute"></select>
+                                </span>
+                            </label>
+                            <button type="button" class="planner-edit-time-nudge" onclick="nudgePlannerFormTime('start', 15)" aria-label="Move start time 15 minutes later">+15</button>
+                        </div>
+                    </section>
+
+                    <div id="planner-duration-preview" class="planner-edit-time-bridge" aria-live="polite">
+                        <span class="planner-edit-time-bridge-line"></span>
+                        <span class="planner-edit-time-duration">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                                <path d="M12 5v14m0 0-4-4m4 4 4-4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+                            </svg>
+                            <span>Duration</span>
+                            <strong id="planner-duration-value">1 hr</strong>
+                        </span>
+                        <span class="planner-edit-time-bridge-line"></span>
+                    </div>
+
+                    <section id="planner-end-control" class="planner-edit-time-control planner-edit-time-end">
+                        <input id="planner-end-time" type="hidden" value="10:00">
+                        <div class="planner-edit-time-heading">
+                            <span class="planner-edit-time-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                    <path d="M5 12h12m-4-4 4 4-4 4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+                                </svg>
+                            </span>
+                            <span class="min-w-0 flex-1">
+                                <span class="planner-edit-time-title">Ends at</span>
+                                <span class="planner-edit-time-copy">Calculated from the selected timer type</span>
+                            </span>
+                            <strong id="planner-end-summary" class="planner-edit-time-summary">10:00 AM</strong>
+                        </div>
+                        <div class="planner-edit-time-picker">
+                            <button type="button" class="planner-edit-time-nudge" onclick="nudgePlannerFormTime('end', -15)" aria-label="Move end time 15 minutes earlier">−15</button>
+                            <label class="planner-edit-time-part">
+                                <span>Hour</span>
+                                <span class="planner-edit-time-select-shell">
+                                    <select id="planner-end-hour" onchange="syncPlannerFormTimeFromParts('end')" aria-label="New block end hour"></select>
+                                </span>
+                            </label>
+                            <span class="planner-edit-time-colon" aria-hidden="true">:</span>
+                            <label class="planner-edit-time-part">
+                                <span>Minute</span>
+                                <span class="planner-edit-time-select-shell">
+                                    <select id="planner-end-minute" onchange="syncPlannerFormTimeFromParts('end')" aria-label="New block end minute"></select>
+                                </span>
+                            </label>
+                            <button type="button" class="planner-edit-time-nudge" onclick="nudgePlannerFormTime('end', 15)" aria-label="Move end time 15 minutes later">+15</button>
+                        </div>
+                    </section>
+
+                    <p class="planner-edit-time-hint">
+                        Start keeps the selected Focus/Break duration; adjust End when you need a custom length.
+                    </p>
+                </div>
+
+                <p id="planner-form-status" class="hidden" role="status"></p>
+
+                <button id="planner-save-button" type="button" onclick="savePlannerSession()" class="btn-primary w-full py-3.5 flex items-center justify-center gap-2 shadow-md shadow-brand/10">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 5v14m-7-7h14"></path></svg>
+                    <span id="planner-save-label">Add to timeline</span>
+                </button>
+            </div>
+        </div>
+
+        <div id="planner-automation-card" class="pastel-card p-5 border border-accent-mint/10">
+            <div class="flex items-start gap-3">
+                <span class="w-10 h-10 rounded-xl bg-accent-mintLight text-accent-mint flex items-center justify-center flex-shrink-0">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12l4 4L19 6"></path></svg>
+                </span>
+                <div class="min-w-0 flex-1">
+                    <p id="planner-automation-title" class="text-sm font-black text-textMain">Automation is ready</p>
+                    <p id="planner-automation-copy" class="text-[11px] font-medium text-textMuted leading-relaxed mt-1">Keep Lumen open in any browser tab. The next timer will start automatically.</p>
+                </div>
+                <button id="planner-automation-toggle" type="button" onclick="togglePlannerAutomation()" aria-pressed="true" class="planner-switch is-on" title="Toggle automatic timer starts">
+                    <span></span>
+                </button>
+            </div>
+            <div id="planner-automation-timing" class="hidden mt-4 pt-4 border-t border-gray-100">
+                <div class="flex items-center justify-between gap-3">
+                    <span id="planner-automation-timing-label" class="text-[9px] font-black text-textMuted uppercase tracking-wider truncate">Next session</span>
+                    <span id="planner-automation-countdown" class="text-sm font-black text-textMain tabular-nums">--:--</span>
+                </div>
+                <div class="h-1.5 rounded-full bg-gray-100 overflow-hidden mt-2">
+                    <div id="planner-automation-progress" class="h-full rounded-full bg-brand transition-[width] duration-700" style="width: 0%"></div>
+                </div>
+            </div>
+            <button id="planner-auto-float-button" type="button" onclick="togglePlannerAutoFloat()" aria-pressed="false" class="mt-4 w-full flex items-center gap-3 p-3 rounded-xl bg-gray-50 border border-gray-100 text-left hover:bg-white hover:border-brand/20 transition-all">
+                <span id="planner-auto-float-icon" class="w-9 h-9 rounded-xl bg-white text-brand shadow-sm flex items-center justify-center flex-shrink-0">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H5a2 2 0 00-2 2v10a2 2 0 002 2h14a2 2 0 002-2v-3M14 3h7m0 0v7m0-7l-9 9"></path>
+                    </svg>
+                </span>
+                <span class="min-w-0 flex-1">
+                    <span id="planner-auto-float-label" class="block text-xs font-black text-textMain">Checking desktop timer…</span>
+                    <span id="planner-auto-float-hint" class="block text-[9px] font-semibold text-textMuted mt-1">Appears outside the browser and stays on top</span>
+                </span>
+                <span id="planner-auto-float-state" class="w-2.5 h-2.5 rounded-full bg-gray-300 flex-shrink-0"></span>
+            </button>
+            <div class="mt-3 flex items-center justify-between gap-3 px-1">
+                <span class="min-w-0">
+                    <span class="block text-[10px] font-black text-textMain">Auto-show planned blocks</span>
+                    <span class="block text-[9px] font-semibold text-textMuted mt-0.5">Uses the same native desktop window</span>
+                </span>
+                <button id="planner-desktop-auto-toggle" type="button" onclick="togglePlannerDesktopAutoShow()" aria-pressed="true" class="planner-switch is-on flex-shrink-0" title="Toggle automatic desktop timer opening">
+                    <span></span>
+                </button>
+            </div>
+            <p id="planner-auto-float-error" class="hidden text-[10px] font-bold text-red-700 mt-2 px-1" role="status"></p>
+        </div>
+    </aside>
+
+    <section class="xl:col-span-8 animate-slide-up" style="animation-delay: 0.22s;">
+        <div class="pastel-card p-5 md:p-7 min-h-[640px]">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+                <div>
+                    <p id="planner-date-eyebrow" class="text-[9px] font-black text-brand uppercase tracking-[0.18em]">Tomorrow's rhythm</p>
+                    <h3 id="planner-date-title" class="text-2xl font-black text-textMain mt-1">Loading date…</h3>
+                </div>
+                <div class="flex items-center gap-2 flex-wrap self-start md:self-auto">
+                    <button type="button" onclick="openPlannerQuickBuild()" class="inline-flex items-center gap-1.5 text-[10px] font-bold text-white bg-brand hover:bg-brand/90 px-3 py-2 rounded-xl shadow-sm transition-colors">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 3L4 14h7v7l9-11h-7V3z"></path></svg>
+                        Quick build
+                    </button>
+                    <button id="planner-copy-button" type="button" onclick="requestPlannerCopy()" class="inline-flex items-center gap-1.5 text-[10px] font-bold text-textMuted bg-gray-50 hover:text-brand hover:bg-brand-light border border-gray-100 px-3 py-2 rounded-xl transition-colors">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="8" y="8" width="11" height="11" rx="2" stroke-width="2"></rect><path stroke-linecap="round" stroke-width="2" d="M16 8V5a2 2 0 00-2-2H5a2 2 0 00-2 2v9a2 2 0 002 2h3"></path></svg>
+                        Copy today
+                    </button>
+                    <button id="planner-clear-button" type="button" onclick="requestPlannerClear()" class="inline-flex items-center gap-1.5 text-[10px] font-bold text-textMuted bg-gray-50 hover:text-red-500 hover:bg-red-50 border border-gray-100 px-3 py-2 rounded-xl transition-colors disabled:opacity-40 disabled:pointer-events-none">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-1 13H6L5 7m3 0V4h8v3M3 7h18"></path></svg>
+                        Clear
+                    </button>
+                    <div id="planner-load-state" class="inline-flex items-center gap-2 text-[10px] font-bold text-textMuted bg-gray-50 border border-gray-100 px-3 py-2 rounded-xl">
+                        <span class="w-2 h-2 rounded-full bg-brand animate-pulse"></span>
+                        Loading timeline
+                    </div>
+                </div>
+            </div>
+
+            <div class="planner-map-shell mb-7">
+                <div class="flex items-center justify-between gap-3 mb-4">
+                    <div>
+                        <p class="text-[9px] font-black text-brand uppercase tracking-[0.16em]">Rhythm map</p>
+                        <p class="text-xs font-bold text-textMain mt-1">Your day at a glance</p>
+                    </div>
+                    <span id="planner-map-summary" class="text-[10px] font-bold text-textMuted bg-white border border-gray-100 px-3 py-1.5 rounded-full">0m planned</span>
+                </div>
+                <div class="flex items-center justify-between text-[9px] font-bold text-textMuted mb-3">
+                    <span>00:00</span>
+                    <span>06:00</span>
+                    <span>12:00</span>
+                    <span>18:00</span>
+                    <span>24:00</span>
+                </div>
+                <div id="planner-rhythm-strip" class="planner-rhythm-strip" role="group" aria-label="24 hour schedule overview"></div>
+                <div class="flex items-center gap-4 flex-wrap mt-3 text-[9px] font-bold text-textMuted">
+                    <span class="inline-flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-brand"></span>Focus</span>
+                    <span class="inline-flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-accent-mint"></span>Short break</span>
+                    <span class="inline-flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-[#F59E0B]"></span>Long break</span>
+                    <span class="ml-auto hidden sm:inline">Click a block to edit</span>
+                </div>
+            </div>
+
+            <div id="planner-timeline" class="planner-timeline" aria-live="polite"></div>
+
+            <div id="planner-empty-state" class="hidden py-20 text-center">
+                <div class="w-16 h-16 rounded-2xl bg-brand-light text-brand flex items-center justify-center mx-auto mb-5">
+                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M4 6h16M7 3v3m10-3v3M5 10h4v4H5v-4zm6 0h8m-8 4h8M5 17h4v4H5v-4zm6 2h8"></path></svg>
+                </div>
+                <h4 class="text-lg font-black text-textMain">Your day is a blank canvas</h4>
+                <p class="text-xs font-medium text-textMuted mt-2 max-w-sm mx-auto">Add the first focus block, then place recovery where your energy naturally dips.</p>
+                <button type="button" onclick="document.getElementById('planner-label').focus()" class="mt-5 text-xs font-bold text-brand bg-brand-light hover:bg-brand hover:text-white px-4 py-2.5 rounded-xl transition-colors">Create first block</button>
+            </div>
+        </div>
+    </section>
+</div>
+
+<div id="planner-edit-backdrop" class="fixed inset-0 z-[80] flex items-center justify-center bg-textMain/20 backdrop-blur-sm hidden opacity-0 transition-opacity duration-200">
+    <div id="planner-edit-card" class="pastel-card w-full max-w-md p-6 md:p-7 mx-4 scale-95 transition-transform duration-200 shadow-2xl max-h-[90vh] overflow-y-auto">
+        <div class="flex items-start justify-between gap-4 mb-6">
+            <div>
+                <p class="text-[9px] font-black text-brand uppercase tracking-[0.18em]">Edit session</p>
+                <h3 class="text-xl font-black text-textMain mt-1">Update this time block</h3>
+                <p class="text-xs font-medium text-textMuted mt-2">Changes are reflected instantly across your timeline and timer.</p>
+            </div>
+            <button type="button" onclick="closePlannerEdit()" class="w-9 h-9 rounded-xl bg-gray-50 text-textMuted hover:text-textMain flex items-center justify-center transition-colors" aria-label="Close edit session">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-width="2" d="M6 6l12 12M18 6L6 18"></path></svg>
+            </button>
+        </div>
+
+        <div class="space-y-5">
+            <div>
+                <p class="block text-[10px] font-black text-textMuted uppercase tracking-wider mb-2">Timer type</p>
+                <div class="grid grid-cols-3 gap-2" role="group" aria-label="Edit timer type">
+                    <button id="planner-edit-mode-work" type="button" onclick="selectPlannerEditMode('work')" aria-pressed="true" class="planner-mode-button planner-mode-work">
+                        <span class="planner-mode-icon">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 3L4 14h7v7l9-11h-7V3z"></path></svg>
+                        </span>
+                        <span>Focus</span>
+                    </button>
+                    <button id="planner-edit-mode-short" type="button" onclick="selectPlannerEditMode('short')" aria-pressed="false" class="planner-mode-button planner-mode-short">
+                        <span class="planner-mode-icon">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-width="2" d="M5 12h14M12 5v14"></path></svg>
+                        </span>
+                        <span>Short</span>
+                    </button>
+                    <button id="planner-edit-mode-long" type="button" onclick="selectPlannerEditMode('long')" aria-pressed="false" class="planner-mode-button planner-mode-long">
+                        <span class="planner-mode-icon">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 8A6 6 0 116 8c0-2 1-4 3-5m6 0c2 1 3 3 3 5"></path></svg>
+                        </span>
+                        <span>Long</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <input id="planner-edit-label" type="text" maxlength="80" class="input-pastel" placeholder=" ">
+                <label for="planner-edit-label" class="label-floating">Label (optional)</label>
+            </div>
+
+            <div class="planner-edit-time-range" aria-label="Session time range">
+                <section id="planner-edit-start-control" class="planner-edit-time-control planner-edit-time-start">
+                    <input id="planner-edit-start-time" type="hidden">
+                    <div class="planner-edit-time-heading">
+                        <span class="planner-edit-time-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <circle cx="12" cy="12" r="8" stroke-width="2"></circle>
+                                <path d="M12 8v4l3 2" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+                            </svg>
+                        </span>
+                        <span class="min-w-0 flex-1">
+                            <span class="planner-edit-time-title">Starts at</span>
+                            <span class="planner-edit-time-copy">Beginning of this block</span>
+                        </span>
+                        <strong id="planner-edit-start-summary" class="planner-edit-time-summary">9:00 AM</strong>
+                    </div>
+                    <div class="planner-edit-time-picker">
+                        <button type="button" class="planner-edit-time-nudge" onclick="nudgePlannerEditTime('start', -15)" aria-label="Move start time 15 minutes earlier">−15</button>
+                        <label class="planner-edit-time-part">
+                            <span>Hour</span>
+                            <span class="planner-edit-time-select-shell">
+                                <select id="planner-edit-start-hour" onchange="syncPlannerEditTimeFromParts('start')" aria-label="Start hour"></select>
+                            </span>
+                        </label>
+                        <span class="planner-edit-time-colon" aria-hidden="true">:</span>
+                        <label class="planner-edit-time-part">
+                            <span>Minute</span>
+                            <span class="planner-edit-time-select-shell">
+                                <select id="planner-edit-start-minute" onchange="syncPlannerEditTimeFromParts('start')" aria-label="Start minute"></select>
+                            </span>
+                        </label>
+                        <button type="button" class="planner-edit-time-nudge" onclick="nudgePlannerEditTime('start', 15)" aria-label="Move start time 15 minutes later">+15</button>
+                    </div>
+                </section>
+
+                <div id="planner-edit-duration-preview" class="planner-edit-time-bridge" aria-live="polite">
+                    <span class="planner-edit-time-bridge-line"></span>
+                    <span class="planner-edit-time-duration">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                            <path d="M12 5v14m0 0-4-4m4 4 4-4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+                        </svg>
+                        <span>Duration</span>
+                        <strong id="planner-edit-duration-value">1 hr</strong>
+                    </span>
+                    <span class="planner-edit-time-bridge-line"></span>
+                </div>
+
+                <section id="planner-edit-end-control" class="planner-edit-time-control planner-edit-time-end">
+                    <input id="planner-edit-end-time" type="hidden">
+                    <div class="planner-edit-time-heading">
+                        <span class="planner-edit-time-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path d="M5 12h12m-4-4 4 4-4 4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+                            </svg>
+                        </span>
+                        <span class="min-w-0 flex-1">
+                            <span class="planner-edit-time-title">Ends at</span>
+                            <span class="planner-edit-time-copy">Timer switches at this point</span>
+                        </span>
+                        <strong id="planner-edit-end-summary" class="planner-edit-time-summary">10:00 AM</strong>
+                    </div>
+                    <div class="planner-edit-time-picker">
+                        <button type="button" class="planner-edit-time-nudge" onclick="nudgePlannerEditTime('end', -15)" aria-label="Move end time 15 minutes earlier">−15</button>
+                        <label class="planner-edit-time-part">
+                            <span>Hour</span>
+                            <span class="planner-edit-time-select-shell">
+                                <select id="planner-edit-end-hour" onchange="syncPlannerEditTimeFromParts('end')" aria-label="End hour"></select>
+                            </span>
+                        </label>
+                        <span class="planner-edit-time-colon" aria-hidden="true">:</span>
+                        <label class="planner-edit-time-part">
+                            <span>Minute</span>
+                            <span class="planner-edit-time-select-shell">
+                                <select id="planner-edit-end-minute" onchange="syncPlannerEditTimeFromParts('end')" aria-label="End minute"></select>
+                            </span>
+                        </label>
+                        <button type="button" class="planner-edit-time-nudge" onclick="nudgePlannerEditTime('end', 15)" aria-label="Move end time 15 minutes later">+15</button>
+                    </div>
+                </section>
+
+                <p class="planner-edit-time-hint">
+                    Pick hour and minute directly, or nudge either edge by 15 minutes.
+                </p>
+            </div>
+
+            <p id="planner-edit-status" class="hidden" role="status"></p>
+
+            <div class="grid grid-cols-2 gap-3">
+                <button type="button" onclick="closePlannerEdit()" class="px-4 py-3 rounded-xl text-xs font-bold text-textMuted bg-gray-50 hover:text-textMain transition-colors">Cancel</button>
+                <button id="planner-edit-save" type="button" onclick="savePlannerEditSession()" class="btn-primary px-4 py-3 flex items-center justify-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+                    Save changes
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="planner-quick-backdrop" class="fixed inset-0 z-[70] flex items-center justify-center bg-textMain/20 backdrop-blur-sm hidden opacity-0 transition-opacity duration-200">
+    <div id="planner-quick-card" class="pastel-card w-full max-w-lg p-6 md:p-7 mx-4 scale-95 transition-transform duration-200 shadow-2xl max-h-[90vh] overflow-y-auto">
+        <div class="flex items-start justify-between gap-4 mb-6">
+            <div>
+                <p class="text-[9px] font-black text-brand uppercase tracking-[0.18em]">Quick build</p>
+                <h3 class="text-xl font-black text-textMain mt-1">Generate your whole rhythm</h3>
+                <p class="text-xs font-medium text-textMuted mt-2">Alternate focus and recovery automatically across your day.</p>
+            </div>
+            <button type="button" onclick="closePlannerQuickBuild()" class="w-9 h-9 rounded-xl bg-gray-50 text-textMuted hover:text-textMain flex items-center justify-center transition-colors" aria-label="Close quick build">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-width="2" d="M6 6l12 12M18 6L6 18"></path></svg>
+            </button>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+            <div>
+                <label for="planner-quick-start" class="block text-[9px] font-black text-textMuted uppercase tracking-wider mb-2">Day starts</label>
+                <input id="planner-quick-start" type="time" step="300" value="08:00" oninput="renderPlannerQuickPreview()" class="input-pastel font-bold tabular-nums">
+            </div>
+            <div>
+                <label for="planner-quick-end" class="block text-[9px] font-black text-textMuted uppercase tracking-wider mb-2">Day ends</label>
+                <input id="planner-quick-end" type="time" step="300" value="17:00" oninput="renderPlannerQuickPreview()" class="input-pastel font-bold tabular-nums">
+            </div>
+            <div>
+                <label for="planner-quick-focus" class="block text-[9px] font-black text-textMuted uppercase tracking-wider mb-2">Focus minutes</label>
+                <input id="planner-quick-focus" type="number" min="20" max="180" step="5" value="50" oninput="renderPlannerQuickPreview()" class="input-pastel font-bold tabular-nums">
+            </div>
+            <div>
+                <label for="planner-quick-short" class="block text-[9px] font-black text-textMuted uppercase tracking-wider mb-2">Short break</label>
+                <input id="planner-quick-short" type="number" min="5" max="60" step="5" value="10" oninput="renderPlannerQuickPreview()" class="input-pastel font-bold tabular-nums">
+            </div>
+            <div>
+                <label for="planner-quick-long" class="block text-[9px] font-black text-textMuted uppercase tracking-wider mb-2">Long break</label>
+                <input id="planner-quick-long" type="number" min="10" max="120" step="5" value="30" oninput="renderPlannerQuickPreview()" class="input-pastel font-bold tabular-nums">
+            </div>
+            <div>
+                <label for="planner-quick-cycle" class="block text-[9px] font-black text-textMuted uppercase tracking-wider mb-2">Long after</label>
+                <select id="planner-quick-cycle" onchange="renderPlannerQuickPreview()" class="input-pastel font-bold cursor-pointer">
+                    <option value="2">2 focus blocks</option>
+                    <option value="3" selected>3 focus blocks</option>
+                    <option value="4">4 focus blocks</option>
+                </select>
+            </div>
+        </div>
+
+        <div id="planner-quick-preview" class="mt-5 p-4 rounded-2xl bg-gray-50 border border-gray-100">
+            <div class="flex items-center justify-between gap-3">
+                <span class="text-[10px] font-black text-textMuted uppercase tracking-wider">Generated plan</span>
+                <span id="planner-quick-count" class="text-xs font-black text-brand">0 sessions</span>
+            </div>
+            <div id="planner-quick-mini-strip" class="planner-quick-mini-strip mt-3"></div>
+            <p id="planner-quick-summary" class="text-[10px] font-semibold text-textMuted mt-3">Choose a valid day range.</p>
+        </div>
+
+        <p id="planner-quick-status" class="hidden mt-4 text-xs font-bold text-red-700 bg-red-50 rounded-xl px-4 py-3" role="status"></p>
+
+        <div class="flex items-center justify-end gap-3 mt-6">
+            <button type="button" onclick="closePlannerQuickBuild()" class="px-4 py-3 rounded-xl text-xs font-bold text-textMuted hover:bg-gray-50 transition-colors">Cancel</button>
+            <button id="planner-quick-save" type="button" onclick="applyPlannerQuickBuild()" class="btn-primary px-5 py-3 flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+                <span id="planner-quick-save-label">Build this day</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<div id="planner-action-backdrop" class="fixed inset-0 z-[75] flex items-center justify-center bg-textMain/20 backdrop-blur-sm hidden opacity-0 transition-opacity duration-200">
+    <div id="planner-action-card" class="pastel-card w-full max-w-sm p-7 mx-4 scale-95 transition-transform duration-200 text-center shadow-2xl">
+        <div id="planner-action-icon" class="w-14 h-14 rounded-2xl bg-brand-light text-brand flex items-center justify-center mx-auto mb-4">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 8h11v11H8zM5 5h10v3M5 5v10h3"></path></svg>
+        </div>
+        <h3 id="planner-action-title" class="text-xl font-black text-textMain">Replace this plan?</h3>
+        <p id="planner-action-copy" class="text-xs font-medium text-textMuted mt-2">Existing sessions will be replaced.</p>
+        <div class="grid grid-cols-2 gap-3 mt-7">
+            <button type="button" onclick="closePlannerAction()" class="px-4 py-3 rounded-xl text-xs font-bold text-textMuted bg-gray-50 hover:text-textMain transition-colors">Cancel</button>
+            <button id="planner-action-confirm" type="button" onclick="confirmPlannerAction()" class="px-4 py-3 rounded-xl text-xs font-bold text-white bg-brand hover:bg-brand/90 transition-colors">Continue</button>
+        </div>
+    </div>
+</div>
+
+<div id="planner-delete-backdrop" class="fixed inset-0 z-[70] flex items-center justify-center bg-textMain/20 backdrop-blur-sm hidden opacity-0 transition-opacity duration-200">
+    <div id="planner-delete-card" class="pastel-card w-full max-w-sm p-7 mx-4 scale-95 transition-transform duration-200 text-center shadow-2xl">
+        <div class="w-14 h-14 rounded-2xl bg-red-50 text-red-500 flex items-center justify-center mx-auto mb-4">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-1 13H6L5 7m3 0V4h8v3M3 7h18"></path></svg>
+        </div>
+        <h3 class="text-xl font-black text-textMain">Remove this block?</h3>
+        <p class="text-xs font-medium text-textMuted mt-2">The rest of your timeline will stay exactly as planned.</p>
+        <div class="grid grid-cols-2 gap-3 mt-7">
+            <button type="button" onclick="closePlannerDelete()" class="px-4 py-3 rounded-xl text-xs font-bold text-textMuted bg-gray-50 hover:text-textMain transition-colors">Keep it</button>
+            <button id="planner-delete-confirm" type="button" onclick="confirmPlannerDelete()" class="px-4 py-3 rounded-xl text-xs font-bold text-white bg-red-700 hover:bg-red-800 transition-colors">Remove block</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='planner.js') }}"></script>
+{% endblock %}
