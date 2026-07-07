@@ -75,22 +75,9 @@ Lumen's reporting layer is designed for reflection rather than vanity metrics:
 
 ## Architecture
 
-```text
-┌───────────────────────────────┐
-│  Browser UI                   │
-│  Jinja · Tailwind · JS        │
-└──────────────┬────────────────┘
-               │ JSON / HTTP
-┌──────────────▼────────────────┐
-│  Flask application            │
-│  Pages · APIs · automation    │
-└───────┬─────────────────┬─────┘
-        │                 │
-┌───────▼────────┐  ┌─────▼────────────────────┐
-│ SQLite         │  │ Windows timer companion  │
-│ Local data     │  │ Native always-on-top UI  │
-└────────────────┘  └──────────────────────────┘
-```
+<div align="center">
+  <img src="media/lumen-architecture.png" width="1200" alt="Lumen architecture: Browser UI communicates with the Flask app over HTTP and JSON; Flask reads and writes private SQLite data and coordinates the Windows desktop timer">
+</div>
 
 ### Technology
 
@@ -110,6 +97,8 @@ No Python, Flask, or Git installation is required.
 3. Wait for the setup check to finish; Lumen opens and a desktop shortcut is created.
 
 The setup uses an existing Python 3.10+ installation when available. Otherwise, on supported Windows 10/11 systems, it installs Python through the official Python Install Manager, creates an isolated `.venv`, installs the pinned dependency range, verifies a temporary empty database, and installs the Lumen shortcut. Internet access is needed only for the initial dependency installation.
+
+All production assets are included in the repository: the Poppins font files, compiled CSS, Chart.js bundle, Lumen icon, desktop icon, notification sound, and README images. The setup validation checks those files before launch, so a partial or damaged download fails early with a clear message.
 
 If Windows Package Manager is missing, install Microsoft's [App Installer](https://aka.ms/getwinget), then run `Setup-Lumen.cmd` again.
 
@@ -200,7 +189,8 @@ Personal-Dashboard/
 │   ├── Install-DesktopShortcut.ps1
 │   └── Lumen.ico
 ├── media/
-│   └── lumen-dashboard-preview.png
+│   ├── lumen-dashboard-preview.png
+│   └── lumen-architecture.png
 ├── static/
 │   ├── planner.js                 # Day Planner behavior and automation UI
 │   ├── timer.js                   # Persistent manual/scheduled timer state
