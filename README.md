@@ -18,7 +18,7 @@
 ## Product preview
 
 <div align="center">
-  <img src="media/lumen-dashboard-preview.png" width="1200" alt="Lumen dashboard showing Today, tasks, Day Planner, Focus timer, and Performance views">
+  <img src="media/lumen-dashboard-preview.png" width="1200" alt="Real Lumen Today dashboard screenshot showing focus metrics, next actions, routines, and goal of the day">
 </div>
 
 ## What is Lumen?
