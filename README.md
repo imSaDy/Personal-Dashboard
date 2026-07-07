@@ -98,6 +98,8 @@ No Python, Flask, or Git installation is required.
 
 The setup uses an existing Python 3.10+ installation when available. Otherwise, on supported Windows 10/11 systems, it installs Python through the official Python Install Manager, creates an isolated `.venv`, installs the pinned dependency range, verifies a temporary empty database, and installs the Lumen shortcut. Internet access is needed only for the initial dependency installation.
 
+All production assets are included in the repository: the Poppins font files, compiled CSS, Chart.js bundle, Lumen icon, desktop icon, notification sound, and README images. The setup validation checks those files before launch, so a partial or damaged download fails early with a clear message.
+
 If Windows Package Manager is missing, install Microsoft's [App Installer](https://aka.ms/getwinget), then run `Setup-Lumen.cmd` again.
 
 ### Manual setup
