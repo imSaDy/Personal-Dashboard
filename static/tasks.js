@@ -4,6 +4,7 @@
 
 let currentTasksData = []; // Stores tasks globally so we can easily populate the edit modal
 let currentTaskFilter = 'open';
+const pendingTaskToggles = new Set();
 
 function escapeTaskText(value) {
     const element = document.createElement('div');
@@ -71,7 +72,7 @@ function formatTaskDate(dateString, isCompleted = false) {
 /**
  * Utility: Animates a number.
  */
-function animateValue(obj, start, end, duration) {
+function animateTaskValue(obj, start, end, duration) {
     let startTimestamp = null;
     const step = (timestamp) => {
         if (!startTimestamp) startTimestamp = timestamp;
@@ -112,7 +113,7 @@ function renderTasks() {
     const openTasks = currentTasksData.filter(task => task.status !== 'Completed').length;
     if (countDisplay) {
         const currentVal = parseInt(countDisplay.innerText) || 0;
-        animateValue(countDisplay, currentVal, openTasks, 500);
+        animateTaskValue(countDisplay, currentVal, openTasks, 500);
     }
 
     const query = (searchInput?.value || '').trim().toLocaleLowerCase();
@@ -273,26 +274,43 @@ async function submitTask() {
     if (!titleInput.value.trim()) return titleInput.focus();
 
     try {
-        await fetch('/api/tasks', {
+        const response = await fetch('/api/tasks', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ title: titleInput.value.trim(), deadline: deadlineInput.value, priority: priorityInput.value })
         });
-        
+        if (!response.ok) throw new Error(`Task creation failed with status ${response.status}`);
+
         titleInput.value = ''; deadlineInput.value = ''; priorityInput.value = 'Medium';
-        titleInput.blur(); 
-        loadTasks();
-    } catch (error) { console.error("Task submission failed", error); }
+        titleInput.blur();
+        await loadTasks();
+        window.showLumenToast?.('Task added.');
+    } catch (error) {
+        console.error("Task submission failed", error);
+        window.showLumenToast?.('The task could not be added.', true);
+    }
 }
 
 /**
  * Toggles status.
  */
 async function toggleTask(id, checkboxEl) {
+    if (pendingTaskToggles.has(id)) return;
+    pendingTaskToggles.add(id);
+    checkboxEl.disabled = true;
+
     try {
-        await fetch(`/api/tasks/${id}/toggle`, { method: 'PUT' });
-        loadTasks();
-    } catch (error) { checkboxEl.checked = !checkboxEl.checked; }
+        const response = await fetch(`/api/tasks/${id}/toggle`, { method: 'PUT' });
+        if (!response.ok) throw new Error(`Task toggle failed with status ${response.status}`);
+        await loadTasks();
+    } catch (error) {
+        console.error("Task toggle failed", error);
+        checkboxEl.checked = !checkboxEl.checked;
+        checkboxEl.disabled = false;
+        window.showLumenToast?.('The task status could not be updated.', true);
+    } finally {
+        pendingTaskToggles.delete(id);
+    }
 }
 
 
@@ -359,10 +377,11 @@ async function submitEditTask() {
         if (!response.ok) throw new Error("Update failed");
         
         closeEditModal();
-        loadTasks(); // Refresh board with updated data
+        await loadTasks(); // Refresh board with updated data
+        window.showLumenToast?.('Task updated.');
     } catch (error) {
         console.error(error);
-        alert("Failed to update task.");
+        window.showLumenToast?.('The task could not be updated.', true);
     } finally {
         submitBtn.disabled = false;
         submitBtn.innerHTML = originalHTML;
@@ -432,6 +451,7 @@ async function executeDeleteTask() {
         setTimeout(() => {
             loadTasks(); 
         }, 300);
+        window.showLumenToast?.('Task deleted.');
 
     } catch (error) {
         console.error("Delete failed:", error);
@@ -439,7 +459,7 @@ async function executeDeleteTask() {
             element.style.opacity = '1';
             element.style.transform = 'translateX(0) scale(1)';
         });
-        alert("System Error: Could not delete the task.");
+        window.showLumenToast?.('The task could not be deleted.', true);
     } finally {
         submitBtn.disabled = false;
         submitBtn.innerHTML = originalHTML;

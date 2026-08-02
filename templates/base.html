@@ -5,7 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Lumen // Dashboard{% endblock %}</title>
-    <link rel="icon" type="image/png" href="{{ url_for('static', filename='lumen-icon.png') }}">
+    <link rel="icon" type="image/png" sizes="512x512" href="{{ url_for('static', filename='lumen-icon.png') }}">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
     <link rel="apple-touch-icon" href="{{ url_for('static', filename='lumen-icon.png') }}">
         
     <script src="{{ url_for('static', filename='chart.min.js') }}"></script>
@@ -19,8 +20,7 @@
         <div class="flex flex-col h-full">
             <div class="h-24 flex items-center px-8 border-b border-gray-50/50">
                 <a href="/" class="flex items-center gap-3 group outline-none">
-                    <img src="{{ url_for('static', filename='lumen-icon.png') }}" alt="" class="w-10 h-10 object-contain group-hover:scale-105 group-hover:-translate-y-0.5 transition-all duration-300">
-                    <h1 class="text-2xl font-black text-textMain tracking-tight hidden lg:block">Lumen</h1>
+                    <img src="{{ url_for('static', filename='lumen-header-logo.png') }}" alt="Lumen" class="hidden lg:block h-14 w-auto object-contain group-hover:scale-105 group-hover:-translate-y-0.5 transition-all duration-300" style="max-width: 180px;">
                 </a>
             </div>
             
@@ -261,7 +261,53 @@
         <span id="schedule-live-countdown" class="font-black tabular-nums text-sm ml-2">00:00</span>
     </a>
 
+    <div
+        id="lumen-toast"
+        class="fixed right-6 z-[80] translate-y-6 opacity-0 pointer-events-none transition-all duration-300"
+        style="top: 6rem;"
+        role="status"
+        aria-live="polite"
+        aria-hidden="true"
+    >
+        <div id="lumen-toast-card" class="bg-textMain text-white rounded-2xl shadow-2xl px-5 py-3.5 flex items-center gap-3">
+            <span id="lumen-toast-icon" class="w-7 h-7 rounded-full bg-white/10 flex items-center justify-center" aria-hidden="true">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path>
+                </svg>
+            </span>
+            <span id="lumen-toast-message" class="text-sm font-bold">Saved</span>
+        </div>
+    </div>
+
     <script>
+        let lumenToastTimer = null;
+
+        function showLumenToast(message, isError = false) {
+            const toast = document.getElementById('lumen-toast');
+            const card = document.getElementById('lumen-toast-card');
+            const icon = document.getElementById('lumen-toast-icon');
+            const messageElement = document.getElementById('lumen-toast-message');
+            if (!toast || !card || !icon || !messageElement) return;
+
+            window.clearTimeout(lumenToastTimer);
+            messageElement.textContent = message;
+            card.classList.toggle('bg-textMain', !isError);
+            card.classList.toggle('bg-red-700', isError);
+            icon.innerHTML = isError
+                ? '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 8v4m0 4h.01M10.3 3.8L2.6 17.1A2 2 0 004.3 20h15.4a2 2 0 001.7-2.9L13.7 3.8a2 2 0 00-3.4 0z"></path></svg>'
+                : '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>';
+
+            toast.setAttribute('aria-hidden', 'false');
+            toast.classList.remove('translate-y-6', 'opacity-0');
+
+            lumenToastTimer = window.setTimeout(() => {
+                toast.classList.add('translate-y-6', 'opacity-0');
+                toast.setAttribute('aria-hidden', 'true');
+            }, 3200);
+        }
+
+        window.showLumenToast = showLumenToast;
+
         // Cross-Page background audio player routine
         function globalTriggerBeep(beepsRemaining) {
             if (beepsRemaining <= 0) return;

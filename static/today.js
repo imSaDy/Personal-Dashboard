@@ -233,9 +233,18 @@ function renderTodayFocusGoal() {
     `;
 }
 
+function formatTodayHours(value) {
+    const hours = Number(value);
+    if (!Number.isFinite(hours)) return '0';
+    return hours.toLocaleString('en-US', {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 1
+    });
+}
+
 function updateTodayMetrics(metrics) {
     const completedHabits = todayHabits.filter(habit => habit.completed).length;
-    document.getElementById('today-focus-hours').textContent = Number(metrics.total_hours || 0).toFixed(1).replace('.0', '');
+    document.getElementById('today-focus-hours').textContent = formatTodayHours(metrics.total_hours);
     document.getElementById('today-open-tasks').textContent = todayTasks.filter(task => task.status !== 'Completed').length;
     document.getElementById('today-routines-done').textContent = completedHabits;
     document.getElementById('today-routines-total').textContent = `/ ${todayHabits.length}`;

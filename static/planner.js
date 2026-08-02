@@ -3,6 +3,7 @@
    ========================================================================== */
 
 const PLANNER_REQUEST_TIMEOUT_MS = 5000;
+const PLANNER_CLIPBOARD_KEY = 'lumen_planner_clipboard_v1';
 const plannerModeDetails = {
     work: {
         label: 'Focus',
@@ -45,6 +46,7 @@ let plannerDesktopFloatSource = null;
 let plannerDesktopFloatRequestInFlight = false;
 let plannerFormTimeControlsReady = false;
 let plannerEditTimeControlsReady = false;
+let plannerClipboard = null;
 
 function plannerLocalDate(offsetDays = 0) {
     const date = new Date();
@@ -103,6 +105,148 @@ function escapePlannerText(value) {
     const element = document.createElement('div');
     element.textContent = value || '';
     return element.innerHTML;
+}
+
+function plannerDateIsValid(value) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(value || '')) return false;
+    const date = plannerDateObject(value);
+    return !Number.isNaN(date.getTime())
+        && [
+            date.getFullYear(),
+            String(date.getMonth() + 1).padStart(2, '0'),
+            String(date.getDate()).padStart(2, '0')
+        ].join('-') === value;
+}
+
+function plannerTimeIsValid(value) {
+    if (!/^\d{2}:\d{2}$/.test(value || '')) return false;
+    const minutes = plannerTimeToMinutes(value);
+    return minutes >= 0
+        && minutes < 1440
+        && plannerMinutesToTime(minutes) === value;
+}
+
+function plannerDayLabel(dateString, lowercase = false) {
+    let label;
+    if (dateString === plannerLocalDate(0)) {
+        label = 'Today';
+    } else if (dateString === plannerLocalDate(1)) {
+        label = 'Tomorrow';
+    } else {
+        label = plannerDateObject(dateString).toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric'
+        });
+    }
+    return lowercase ? label.toLowerCase() : label;
+}
+
+function normalizePlannerClipboard(rawClipboard) {
+    if (
+        !rawClipboard
+        || typeof rawClipboard !== 'object'
+        || !plannerDateIsValid(rawClipboard.source_date)
+        || !Array.isArray(rawClipboard.sessions)
+        || rawClipboard.sessions.length === 0
+        || rawClipboard.sessions.length > 64
+    ) {
+        return null;
+    }
+
+    const sessions = [];
+    for (const session of rawClipboard.sessions) {
+        if (
+            !session
+            || !plannerModeDetails[session.session_type]
+            || !plannerTimeIsValid(session.start_time)
+            || !plannerTimeIsValid(session.end_time)
+            || session.start_time >= session.end_time
+        ) {
+            return null;
+        }
+        sessions.push({
+            session_type: session.session_type,
+            label: String(session.label || '').trim().slice(0, 80),
+            start_time: session.start_time,
+            end_time: session.end_time
+        });
+    }
+
+    sessions.sort((left, right) => (
+        left.start_time.localeCompare(right.start_time)
+    ));
+    for (let index = 1; index < sessions.length; index += 1) {
+        if (sessions[index].start_time < sessions[index - 1].end_time) {
+            return null;
+        }
+    }
+    return {
+        source_date: rawClipboard.source_date,
+        copied_at: Number(rawClipboard.copied_at) || Date.now(),
+        sessions
+    };
+}
+
+function loadPlannerClipboard() {
+    try {
+        plannerClipboard = normalizePlannerClipboard(
+            JSON.parse(localStorage.getItem(PLANNER_CLIPBOARD_KEY) || 'null')
+        );
+        if (!plannerClipboard) {
+            localStorage.removeItem(PLANNER_CLIPBOARD_KEY);
+        }
+    } catch (error) {
+        plannerClipboard = null;
+    }
+    renderPlannerClipboardActions();
+    return plannerClipboard;
+}
+
+function savePlannerClipboard() {
+    plannerClipboard = normalizePlannerClipboard({
+        source_date: plannerSelectedDate,
+        copied_at: Date.now(),
+        sessions: plannerSessions
+    });
+    if (!plannerClipboard) return false;
+    try {
+        localStorage.setItem(
+            PLANNER_CLIPBOARD_KEY,
+            JSON.stringify(plannerClipboard)
+        );
+    } catch (error) {
+        // The in-memory clipboard still works for this tab.
+    }
+    renderPlannerClipboardActions();
+    return true;
+}
+
+function renderPlannerClipboardActions() {
+    const copyButton = document.getElementById('planner-copy-button');
+    const copyLabel = document.getElementById('planner-copy-label');
+    const pasteButton = document.getElementById('planner-paste-button');
+    const pasteLabel = document.getElementById('planner-paste-label');
+    if (!copyButton || !copyLabel || !pasteButton || !pasteLabel) return;
+
+    const hasSessions = plannerSessions.length > 0;
+    const canPaste = Boolean(
+        plannerClipboard
+        && plannerClipboard.sessions.length
+        && plannerClipboard.source_date !== plannerSelectedDate
+    );
+    copyButton.disabled = !hasSessions;
+    copyLabel.textContent = `Copy ${plannerDayLabel(plannerSelectedDate, true)}`;
+    pasteButton.disabled = !canPaste;
+    pasteLabel.textContent = plannerClipboard
+        ? canPaste
+            ? `Paste ${plannerClipboard.sessions.length} blocks`
+            : 'Copied'
+        : 'Paste plan';
+    pasteButton.title = plannerClipboard
+        ? canPaste
+            ? `Paste the ${plannerDayLabel(plannerClipboard.source_date, true)} plan into ${plannerDayLabel(plannerSelectedDate, true)}`
+            : 'Switch to the other day to paste this plan'
+        : 'Copy a day first';
 }
 
 function setPlannerFormStatus(message = '', type = 'error') {
@@ -337,15 +481,26 @@ function openPlannerAction(action) {
     const copy = document.getElementById('planner-action-copy');
     const confirm = document.getElementById('planner-action-confirm');
     const clearing = action === 'clear';
+    const sourceLabel = plannerClipboard
+        ? plannerDayLabel(plannerClipboard.source_date, true)
+        : 'copied';
+    const targetLabel = plannerDayLabel(plannerSelectedDate, true);
+    const sessionCount = plannerClipboard?.sessions.length || 0;
 
     icon.className = `w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4 ${
         clearing ? 'bg-red-50 text-red-700' : 'bg-brand-light text-brand'
     }`;
-    title.textContent = clearing ? 'Clear this entire day?' : 'Copy today into tomorrow?';
+    title.textContent = clearing
+        ? 'Clear this entire day?'
+        : `Paste ${sourceLabel}’s plan into ${targetLabel}?`;
     copy.textContent = clearing
         ? 'Every block on the selected day will be removed.'
-        : 'Tomorrow’s existing sessions will be replaced by today’s rhythm.';
-    confirm.textContent = clearing ? 'Clear day' : 'Copy & replace';
+        : `${sessionCount} copied block${sessionCount === 1 ? '' : 's'} will ${
+            plannerSessions.length ? 'replace the current plan.' : 'be added to this empty day.'
+        }`;
+    confirm.textContent = clearing
+        ? 'Clear day'
+        : plannerSessions.length ? 'Paste & replace' : 'Paste plan';
     confirm.className = `px-4 py-3 rounded-xl text-xs font-bold text-white transition-colors ${
         clearing ? 'bg-red-500 hover:bg-red-600' : 'bg-brand hover:bg-brand/90'
     }`;
@@ -371,7 +526,31 @@ function closePlannerAction() {
 }
 
 function requestPlannerCopy() {
-    openPlannerAction('copy');
+    if (!plannerSessions.length) {
+        setPlannerFormStatus('Add at least one time block before copying.');
+        return;
+    }
+    if (!savePlannerClipboard()) {
+        setPlannerFormStatus('This plan could not be copied. Please reload and try again.');
+        return;
+    }
+    setPlannerFormStatus(
+        `${plannerDayLabel(plannerSelectedDate)} copied. Switch days and choose Paste plan.`,
+        'success'
+    );
+}
+
+function requestPlannerPaste() {
+    if (!plannerClipboard) loadPlannerClipboard();
+    if (!plannerClipboard) {
+        setPlannerFormStatus('Copy a day before pasting.');
+        return;
+    }
+    if (plannerClipboard.source_date === plannerSelectedDate) {
+        setPlannerFormStatus('Switch to the other day before pasting this plan.');
+        return;
+    }
+    openPlannerAction('paste');
 }
 
 function requestPlannerClear() {
@@ -385,7 +564,7 @@ async function confirmPlannerAction() {
     const button = document.getElementById('planner-action-confirm');
     button.disabled = true;
     const originalCopy = button.textContent;
-    button.textContent = action === 'clear' ? 'Clearing…' : 'Copying…';
+    button.textContent = action === 'clear' ? 'Clearing…' : 'Pasting…';
     try {
         if (action === 'clear') {
             await plannerFetch(
@@ -397,17 +576,25 @@ async function confirmPlannerAction() {
             resetPlannerForm();
             setPlannerFormStatus('The selected day is clear.', 'success');
         } else {
-            await plannerFetch('/api/schedule/copy', {
+            const clipboard = normalizePlannerClipboard(plannerClipboard);
+            if (!clipboard || clipboard.source_date === plannerSelectedDate) {
+                throw new Error('The copied plan is no longer available.');
+            }
+            await plannerFetch('/api/schedule/bulk', {
                 method: 'POST',
                 body: JSON.stringify({
-                    source_date: plannerLocalDate(0),
-                    target_date: plannerLocalDate(1),
-                    replace_existing: true
+                    plan_date: plannerSelectedDate,
+                    sessions: clipboard.sessions,
+                    replace_existing: plannerSessions.length > 0
                 })
             });
             closePlannerAction();
-            selectPlannerDay('tomorrow');
-            setPlannerFormStatus('Today’s rhythm was copied into tomorrow.', 'success');
+            await loadPlannerSessions();
+            resetPlannerForm();
+            setPlannerFormStatus(
+                `${plannerDayLabel(clipboard.source_date)}’s plan was pasted into ${plannerDayLabel(plannerSelectedDate, true)}.`,
+                'success'
+            );
         }
         window.LumenScheduleRunner?.syncNow();
     } catch (error) {
@@ -607,6 +794,7 @@ function selectPlannerDay(day) {
         eyebrow.textContent = day === 'today' ? "Today's live flow" : "Tomorrow's rhythm";
     }
 
+    renderPlannerClipboardActions();
     resetPlannerForm();
     loadPlannerSessions();
 }
@@ -1135,6 +1323,7 @@ function renderPlannerStats() {
     }
     const clearButton = document.getElementById('planner-clear-button');
     if (clearButton) clearButton.disabled = plannerSessions.length === 0;
+    renderPlannerClipboardActions();
 }
 
 function renderPlannerRhythmStrip() {
@@ -1387,6 +1576,7 @@ document.addEventListener('DOMContentLoaded', () => {
     loadPlannerDesktopFloat();
     setInterval(loadPlannerDesktopFloat, 1500);
     selectPlannerDay('tomorrow');
+    loadPlannerClipboard();
     renderPlannerQuickPreview();
 
     const currentStatus = window.LumenScheduleRunner?.getLastStatus();
@@ -1404,6 +1594,10 @@ window.addEventListener('lumen:schedule-automation-change', event => {
         ...(plannerLatestStatus || {}),
         automation_enabled: event.detail.enabled
     });
+});
+
+window.addEventListener('storage', event => {
+    if (event.key === PLANNER_CLIPBOARD_KEY) loadPlannerClipboard();
 });
 
 document.addEventListener('keydown', event => {

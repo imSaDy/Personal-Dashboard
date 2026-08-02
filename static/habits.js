@@ -3,7 +3,14 @@
    ========================================================================== */
 
 let currentHabitsData = []; 
-let selectedForDeletion = new Set(); 
+let selectedForDeletion = new Set();
+const pendingHabitToggles = new Set();
+
+function escapeHabitText(value) {
+    const element = document.createElement('div');
+    element.textContent = value || '';
+    return element.innerHTML;
+}
 
 /**
  * Fetches the daily routines from the server and renders them.
@@ -58,7 +65,9 @@ async function loadHabits() {
                 ? 'bg-white text-brand border-white shadow-inner'
                 : 'bg-gray-50 border-gray-200 text-transparent group-hover:border-brand/50';
 
-            const formattedName = habit.name.toLowerCase().split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+            const formattedName = escapeHabitText(
+                habit.name.toLowerCase().split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')
+            );
             const animationDelay = `${(index * 0.1) + 0.1}s`;
 
             const cardHtml = `
@@ -160,6 +169,9 @@ async function loadRoutineReport() {
 }
 
 async function toggleHabit(id, btnElement) {
+    if (pendingHabitToggles.has(id)) return;
+    pendingHabitToggles.add(id);
+    btnElement.disabled = true;
     btnElement.style.transform = 'scale(0.95)';
     setTimeout(() => { btnElement.style.transform = ''; }, 150);
 
@@ -170,8 +182,14 @@ async function toggleHabit(id, btnElement) {
             body: JSON.stringify({ habit_id: id })
         });
         if (!response.ok) throw new Error('Network response was not ok');
-        loadHabits(); // This refreshes the grid, the report card, AND the new header streak!
-    } catch (error) { console.error("Routine toggle failed:", error); }
+        await loadHabits(); // This refreshes the grid, the report card, AND the new header streak!
+    } catch (error) {
+        console.error("Routine toggle failed:", error);
+        btnElement.disabled = false;
+        window.showLumenToast?.('The routine status could not be updated.', true);
+    } finally {
+        pendingHabitToggles.delete(id);
+    }
 }
 
 function updateDailyProgress(completed, total) {
@@ -244,7 +262,9 @@ function renderManageList() {
 
     currentHabitsData.forEach(habit => {
         const isChecked = selectedForDeletion.has(habit.id) ? 'checked' : '';
-        const formattedName = habit.name.toLowerCase().split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+        const formattedName = escapeHabitText(
+            habit.name.toLowerCase().split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')
+        );
 
         const row = document.createElement('div');
         row.className = 'flex items-center justify-between p-3 rounded-xl border border-gray-100 hover:bg-gray-50 transition-colors';
@@ -330,7 +350,10 @@ async function executeBulkDelete() {
             fetch(`/api/habits/${id}`, { method: 'DELETE' })
         );
         
-        await Promise.all(deletePromises);
+        const responses = await Promise.all(deletePromises);
+        if (responses.some(response => !response.ok)) {
+            throw new Error('At least one routine could not be deleted.');
+        }
         
         selectedForDeletion.clear();
         updateBulkDeleteButton();
@@ -340,10 +363,11 @@ async function executeBulkDelete() {
         setTimeout(() => {
             loadHabits(); 
         }, 300);
+        window.showLumenToast?.('Selected routines deleted.');
 
     } catch (error) {
         console.error("Bulk delete failed:", error);
-        alert("Failed to delete routines. Ensure your backend is running.");
+        window.showLumenToast?.('The selected routines could not be deleted.', true);
     } finally {
         btn.disabled = false;
         btn.innerHTML = originalHTML;
@@ -408,9 +432,11 @@ async function submitNewRoutine() {
         });
         if (!response.ok) throw new Error("Failed to save routine");
         closeRoutineModal();
-        loadHabits();
+        await loadHabits();
+        window.showLumenToast?.('Routine added.');
     } catch (error) {
         console.error(error);
+        window.showLumenToast?.('The routine could not be added.', true);
     } finally {
         submitBtn.disabled = false;
         submitBtn.innerHTML = originalBtnHTML;
@@ -469,10 +495,11 @@ async function submitEditRoutine() {
         if (!response.ok) throw new Error("Update failed");
         
         closeEditRoutineModal();
-        loadHabits(); 
+        await loadHabits();
+        window.showLumenToast?.('Routine updated.');
     } catch (error) {
         console.error(error);
-        alert("Failed to update routine.");
+        window.showLumenToast?.('The routine could not be updated.', true);
     } finally {
         submitBtn.disabled = false;
         submitBtn.innerHTML = originalHTML;

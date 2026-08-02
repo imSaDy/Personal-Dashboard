@@ -254,9 +254,16 @@
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 3L4 14h7v7l9-11h-7V3z"></path></svg>
                         Quick build
                     </button>
-                    <button id="planner-copy-button" type="button" onclick="requestPlannerCopy()" class="inline-flex items-center gap-1.5 text-[10px] font-bold text-textMuted bg-gray-50 hover:text-brand hover:bg-brand-light border border-gray-100 px-3 py-2 rounded-xl transition-colors">
+                    <button id="planner-copy-button" type="button" onclick="requestPlannerCopy()" class="inline-flex items-center gap-1.5 text-[10px] font-bold text-textMuted bg-gray-50 hover:text-brand hover:bg-brand-light border border-gray-100 px-3 py-2 rounded-xl transition-colors disabled:opacity-40 disabled:pointer-events-none">
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="8" y="8" width="11" height="11" rx="2" stroke-width="2"></rect><path stroke-linecap="round" stroke-width="2" d="M16 8V5a2 2 0 00-2-2H5a2 2 0 00-2 2v9a2 2 0 002 2h3"></path></svg>
-                        Copy today
+                        <span id="planner-copy-label">Copy tomorrow</span>
+                    </button>
+                    <button id="planner-paste-button" type="button" onclick="requestPlannerPaste()" disabled class="inline-flex items-center gap-1.5 text-[10px] font-bold text-textMuted bg-gray-50 hover:text-brand hover:bg-brand-light border border-gray-100 px-3 py-2 rounded-xl transition-colors disabled:opacity-40 disabled:pointer-events-none">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5h6m-5-2h4a2 2 0 012 2v1h2a2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V8a2 2 0 012-2h2V5a2 2 0 012-2z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h4"></path>
+                        </svg>
+                        <span id="planner-paste-label">Paste plan</span>
                     </button>
                     <button id="planner-clear-button" type="button" onclick="requestPlannerClear()" class="inline-flex items-center gap-1.5 text-[10px] font-bold text-textMuted bg-gray-50 hover:text-red-500 hover:bg-red-50 border border-gray-100 px-3 py-2 rounded-xl transition-colors disabled:opacity-40 disabled:pointer-events-none">
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-1 13H6L5 7m3 0V4h8v3M3 7h18"></path></svg>

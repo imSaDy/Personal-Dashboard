@@ -8,8 +8,6 @@ let remainingSeconds = 60 * 60;
 let timerInterval = null;
 let isRunning = false;
 let endTime = null;
-let floatingTimerWindow = null;
-let floatingTimerInterval = null;
 let nativeFloatingState = {
     enabled: true,
     native: true,
@@ -106,6 +104,28 @@ function renderScheduledSessionBanner(session = getStoredScheduledSession()) {
 function clearScheduledTimerContext() {
     localStorage.removeItem('timer_schedule_active');
     renderScheduledSessionBanner(null);
+}
+
+function cancelScheduledTimerSession() {
+    clearInterval(timerInterval);
+    timerInterval = null;
+    isRunning = false;
+    remainingSeconds = 0;
+    endTime = null;
+    localStorage.removeItem('timer_schedule_active');
+    localStorage.removeItem('timer_schedule_claim');
+    localStorage.setItem('timer_is_running', 'false');
+    localStorage.setItem('timer_remaining_seconds', '0');
+    localStorage.removeItem('timer_end_time');
+    renderScheduledSessionBanner(null);
+
+    document.getElementById('icon-pause')?.classList.add('hidden');
+    document.getElementById('icon-play')?.classList.remove('hidden');
+    const toggleCopy = document.getElementById('text-toggle');
+    const statusCopy = document.getElementById('timer-status');
+    if (toggleCopy) toggleCopy.innerText = 'Start';
+    if (statusCopy) statusCopy.innerText = 'Planned session removed';
+    if (document.getElementById('timer-display')) updateDisplay();
 }
 
 function formatScheduledCountdown(totalSeconds) {
@@ -222,286 +242,6 @@ function updateDisplay() {
     }
 
     renderFloatingTimer();
-}
-
-function updateFloatingTimerButton() {
-    const button = document.getElementById('floating-timer-button');
-    const label = document.getElementById('floating-timer-label');
-    const hint = document.getElementById('floating-timer-hint');
-    if (!button || !label || !hint) return;
-
-    const isOpen = floatingTimerWindow && !floatingTimerWindow.closed;
-    button.setAttribute('aria-pressed', String(Boolean(isOpen)));
-    label.innerText = isOpen ? 'Close floating' : 'Float timer';
-    hint.innerText = isOpen ? 'Visible above your apps' : 'Always on top';
-    button.classList.toggle('border-brand/20', Boolean(isOpen));
-    button.classList.toggle('bg-white', !isOpen);
-    button.classList.toggle('bg-brand-light', Boolean(isOpen));
-    button.classList.toggle('text-textMain', !isOpen);
-    button.classList.toggle('text-brand', Boolean(isOpen));
-}
-
-function floatingTimerStyles() {
-    return `
-        @font-face {
-            font-family: "Poppins";
-            src: url("/static/fonts/Poppins-Regular.ttf") format("truetype");
-            font-weight: 400 600;
-        }
-        @font-face {
-            font-family: "Poppins";
-            src: url("/static/fonts/Poppins-Bold.ttf") format("truetype");
-            font-weight: 700 900;
-        }
-        :root {
-            color-scheme: light;
-            font-family: "Poppins", ui-sans-serif, system-ui, sans-serif;
-            --timer-accent: #4318FF;
-            --timer-accent-soft: #7B61FF;
-        }
-        * { box-sizing: border-box; }
-        html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; }
-        body {
-            background:
-                radial-gradient(circle at 92% 10%, color-mix(in srgb, var(--timer-accent) 16%, transparent), transparent 38%),
-                #F4F7FE;
-            color: #2B3674;
-            padding: 12px;
-            user-select: none;
-        }
-        button { font: inherit; }
-        .widget {
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            padding: 16px;
-            border: 1px solid rgba(255,255,255,.9);
-            border-radius: 28px;
-            background: rgba(255,255,255,.96);
-            box-shadow: 0 18px 45px rgba(112,144,176,.18);
-        }
-        .topbar, .footer { display: flex; align-items: center; justify-content: space-between; }
-        .brand { display: flex; align-items: center; gap: 8px; font-size: 10px; font-weight: 900; letter-spacing: .18em; }
-        .brand-mark {
-            width: 24px; height: 24px; border-radius: 9px; display: grid; place-items: center;
-            color: white; background: linear-gradient(135deg, var(--timer-accent), var(--timer-accent-soft));
-            box-shadow: 0 6px 14px color-mix(in srgb, var(--timer-accent) 22%, transparent);
-        }
-        .mode {
-            max-width: 130px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-            padding: 6px 9px; border-radius: 999px; background: #F4F7FE;
-            color: #626F9C; font-size: 9px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase;
-        }
-        .content {
-            flex: 1; display: grid; place-items: center; min-height: 0; padding: 8px 0 10px;
-        }
-        .timer-shell {
-            position: relative; width: min(236px, calc(100vw - 54px)); aspect-ratio: 1;
-            display: grid; place-items: center;
-        }
-        .timer-ring { position: absolute; inset: 0; width: 100%; height: 100%; transform: rotate(-90deg); }
-        .ring-track, .ring-progress { fill: transparent; stroke-width: 8; }
-        .ring-track { stroke: #EDF1F7; }
-        .ring-progress {
-            stroke: var(--timer-accent); stroke-linecap: round;
-            transition: stroke-dashoffset .6s linear, stroke .3s ease;
-            filter: drop-shadow(0 4px 7px color-mix(in srgb, var(--timer-accent) 17%, transparent));
-        }
-        .circle-copy {
-            position: relative; z-index: 1; width: 76%; text-align: center;
-            display: flex; flex-direction: column; align-items: center;
-        }
-        .time {
-            color: var(--timer-accent); font-size: clamp(40px, 14vw, 51px);
-            line-height: 1; font-weight: 900; letter-spacing: -.065em; font-variant-numeric: tabular-nums;
-        }
-        .status {
-            max-width: 100%; margin-top: 9px; color: var(--timer-accent);
-            font-size: 9px; font-weight: 800; letter-spacing: .15em; text-transform: uppercase;
-            overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-        }
-        .session-copy {
-            margin-top: 6px; color: #626F9C; font-size: 8px; font-weight: 700; white-space: nowrap;
-        }
-        .footer { gap: 9px; }
-        .control {
-            height: 43px; border: 0; border-radius: 14px; cursor: pointer; font-size: 11px; font-weight: 850;
-            transition: transform .18s ease, box-shadow .18s ease, background .18s ease;
-        }
-        .control:hover { transform: translateY(-1px); }
-        .control:active { transform: translateY(0); }
-        .secondary { width: 84px; color: #626F9C; background: #F4F7FE; }
-        .secondary:hover { color: #1B2559; background: #EDF1F7; }
-        .primary {
-            flex: 1; color: white; background: linear-gradient(135deg, var(--timer-accent), var(--timer-accent-soft));
-            box-shadow: 0 8px 18px color-mix(in srgb, var(--timer-accent) 22%, transparent);
-        }
-        @media (max-height: 420px) {
-            body { padding: 8px; }
-            .widget { padding: 12px; border-radius: 20px; }
-            .content { padding: 4px 0 6px; }
-            .timer-shell { width: min(198px, calc(100vw - 46px)); }
-            .time { font-size: 41px; }
-            .status { margin-top: 6px; }
-            .session-copy { margin-top: 4px; }
-            .control { height: 38px; }
-        }
-        @media (prefers-reduced-motion: reduce) {
-            *, *::before, *::after { animation: none !important; transition: none !important; }
-        }
-    `;
-}
-
-function floatingTimerMarkup() {
-    return `
-        <section class="widget" aria-label="Lumen floating focus timer">
-            <header class="topbar">
-                <div class="brand"><span class="brand-mark" aria-hidden="true">L</span><span>LUMEN</span></div>
-                <span id="floating-mode" class="mode">Deep Work</span>
-            </header>
-            <main class="content" aria-live="polite">
-                <div id="floating-progress-shell" class="timer-shell" role="progressbar" aria-label="Session time remaining" aria-valuemin="0" aria-valuemax="100">
-                    <svg class="timer-ring" viewBox="0 0 256 256" aria-hidden="true">
-                        <circle class="ring-track" cx="128" cy="128" r="120"></circle>
-                        <circle id="floating-ring" class="ring-progress" cx="128" cy="128" r="120" pathLength="100" stroke-dasharray="100" stroke-dashoffset="0"></circle>
-                    </svg>
-                    <div class="circle-copy">
-                        <div id="floating-time" class="time">60:00</div>
-                        <div id="floating-status" class="status">Ready to focus</div>
-                        <div id="floating-session-copy" class="session-copy">60 min session · 100% remaining</div>
-                    </div>
-                </div>
-            </main>
-            <footer class="footer">
-                <button id="floating-reset" type="button" class="control secondary" title="Reset timer">↻ Reset</button>
-                <button id="floating-toggle" type="button" class="control primary">Start</button>
-            </footer>
-        </section>
-    `;
-}
-
-function renderFloatingTimer() {
-    if (!floatingTimerWindow || floatingTimerWindow.closed) return;
-
-    const pipDocument = floatingTimerWindow.document;
-    const time = pipDocument.getElementById('floating-time');
-    const mode = pipDocument.getElementById('floating-mode');
-    const status = pipDocument.getElementById('floating-status');
-    const ring = pipDocument.getElementById('floating-ring');
-    const progressShell = pipDocument.getElementById('floating-progress-shell');
-    const sessionCopy = pipDocument.getElementById('floating-session-copy');
-    const toggle = pipDocument.getElementById('floating-toggle');
-    if (!time || !mode || !status || !ring || !progressShell || !sessionCopy || !toggle) return;
-
-    const modeDetails = getTimerModeDetails();
-    const remainingPercentage = totalSeconds > 0
-        ? Math.max(0, Math.min(100, (remainingSeconds / totalSeconds) * 100))
-        : 0;
-
-    pipDocument.documentElement.style.setProperty('--timer-accent', modeDetails.color);
-    pipDocument.documentElement.style.setProperty('--timer-accent-soft', modeDetails.softColor);
-    pipDocument.body.dataset.running = String(isRunning);
-    pipDocument.title = `${formatTimerValue(remainingSeconds)} · Lumen`;
-    time.innerText = formatTimerValue(remainingSeconds);
-    mode.innerText = modeDetails.label;
-    status.innerText = getTimerStatusCopy();
-    ring.style.strokeDashoffset = String(100 - remainingPercentage);
-    progressShell.setAttribute('aria-valuenow', String(Math.round(remainingPercentage)));
-    sessionCopy.innerText = `${Math.ceil(totalSeconds / 60)} min session · ${Math.round(remainingPercentage)}% remaining`;
-    toggle.innerText = getTimerToggleCopy();
-    toggle.setAttribute('aria-label', `${getTimerToggleCopy()} timer`);
-}
-
-function closeFloatingTimer() {
-    const pipWindow = floatingTimerWindow;
-    if (pipWindow && floatingTimerInterval !== null) {
-        pipWindow.clearInterval(floatingTimerInterval);
-        floatingTimerInterval = null;
-    }
-    if (pipWindow && !pipWindow.closed) {
-        pipWindow.close();
-    }
-    floatingTimerWindow = null;
-    updateFloatingTimerButton();
-}
-
-async function openFloatingTimer() {
-    if (!('documentPictureInPicture' in window)) return;
-    if (floatingTimerWindow && !floatingTimerWindow.closed) {
-        floatingTimerWindow.focus();
-        return;
-    }
-
-    const trigger = document.getElementById('floating-timer-button');
-    if (trigger) trigger.disabled = true;
-
-    try {
-        const pipWindow = await window.documentPictureInPicture.requestWindow({
-            width: 370,
-            height: 480
-        });
-        floatingTimerWindow = pipWindow;
-
-        const style = pipWindow.document.createElement('style');
-        style.textContent = floatingTimerStyles();
-        pipWindow.document.head.appendChild(style);
-        pipWindow.document.body.innerHTML = floatingTimerMarkup();
-
-        pipWindow.document.getElementById('floating-toggle').addEventListener('click', toggleFloatingTimerPlayback);
-        pipWindow.document.getElementById('floating-reset').addEventListener('click', resetTimer);
-
-        floatingTimerInterval = pipWindow.setInterval(() => {
-            if (isRunning) {
-                tickTimer();
-            } else {
-                renderFloatingTimer();
-            }
-        }, 1000);
-
-        pipWindow.addEventListener('pagehide', () => {
-            if (floatingTimerWindow === pipWindow) {
-                pipWindow.clearInterval(floatingTimerInterval);
-                floatingTimerWindow = null;
-                floatingTimerInterval = null;
-                updateFloatingTimerButton();
-            }
-        }, { once: true });
-
-        renderFloatingTimer();
-    } catch (error) {
-        if (error.name !== 'NotAllowedError') {
-            console.error('Unable to open the floating timer.', error);
-        }
-    } finally {
-        if (trigger) trigger.disabled = false;
-        updateFloatingTimerButton();
-    }
-}
-
-function toggleFloatingTimer() {
-    if (floatingTimerWindow && !floatingTimerWindow.closed) {
-        closeFloatingTimer();
-    } else {
-        openFloatingTimer();
-    }
-}
-
-function initializeFloatingTimerFeature() {
-    const button = document.getElementById('floating-timer-button');
-    const label = document.getElementById('floating-timer-label');
-    const hint = document.getElementById('floating-timer-hint');
-    if (!button || !label || !hint) return;
-
-    if (!('documentPictureInPicture' in window)) {
-        button.disabled = true;
-        button.classList.add('opacity-50', 'pointer-events-none');
-        label.innerText = 'Floating unavailable';
-        hint.innerText = 'Use current Chrome or Edge';
-        button.title = 'Document Picture-in-Picture is not supported by this browser.';
-        return;
-    }
-
-    updateFloatingTimerButton();
 }
 
 function nativeFloatingTimerPayload() {
@@ -784,15 +524,6 @@ function toggleTimer() {
     }
 }
 
-function toggleFloatingTimerPlayback() {
-    if (remainingSeconds <= 0) {
-        resetTimer();
-        startTimer();
-        return;
-    }
-    toggleTimer();
-}
-
 function startTimer(resumingFromStorage = false) {
     isRunning = true;
     clearInterval(timerInterval);
@@ -1061,6 +792,10 @@ window.addEventListener('lumen:scheduled-session-start', event => {
     applyScheduledTimerSession(event.detail);
 });
 
+window.addEventListener('lumen:scheduled-session-clear', () => {
+    cancelScheduledTimerSession();
+});
+
 window.addEventListener('lumen:schedule-status', event => {
     renderTimerScheduleStatus(event.detail);
 });
@@ -1070,7 +805,11 @@ window.addEventListener('lumen:schedule-automation-change', () => {
 });
 
 window.addEventListener('storage', event => {
-    if (event.key !== 'timer_schedule_active' || !event.newValue) return;
+    if (event.key !== 'timer_schedule_active') return;
+    if (!event.newValue) {
+        if (event.oldValue) cancelScheduledTimerSession();
+        return;
+    }
     try {
         applyScheduledTimerSession(JSON.parse(event.newValue));
     } catch (error) {

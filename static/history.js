@@ -158,7 +158,7 @@ async function submitEditLog() {
     if (!activityInput) return document.getElementById('edit-log-activity').focus();
     if (isNaN(hoursInput) || hoursInput <= 0) return document.getElementById('edit-log-hours').focus();
     if (hoursInput > 24) {
-        alert('Duration must be no more than 24 hours.');
+        window.showLumenToast?.('Duration must be no more than 24 hours.', true);
         return document.getElementById('edit-log-hours').focus();
     }
 
@@ -182,10 +182,11 @@ async function submitEditLog() {
         loadRecentLogs();
         if (typeof refreshActivitySuggestions === "function") refreshActivitySuggestions();
         if (typeof refreshPerformanceReport === "function") refreshPerformanceReport();
+        window.showLumenToast?.('Time log updated.');
 
     } catch (error) {
         console.error(error);
-        alert(error.message || "Failed to update log.");
+        window.showLumenToast?.(error.message || 'The time log could not be updated.', true);
     } finally {
         submitBtn.disabled = false;
         submitBtn.innerHTML = originalHTML;
@@ -251,6 +252,7 @@ async function executeDeleteLog() {
             loadRecentLogs();
             if (typeof refreshPerformanceReport === "function") refreshPerformanceReport();
         }, 300);
+        window.showLumenToast?.('Time log deleted.');
 
     } catch (error) {
         console.error("Delete failed:", error);
@@ -258,7 +260,7 @@ async function executeDeleteLog() {
             rowElement.style.opacity = '1';
             rowElement.style.transform = 'scale(1)';
         }
-        alert("System Error: Could not delete the entry.");
+        window.showLumenToast?.('The time log could not be deleted.', true);
     } finally {
         submitBtn.disabled = false;
         submitBtn.innerHTML = originalHTML;

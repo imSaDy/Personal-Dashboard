@@ -24,6 +24,26 @@ DESKTOP_FLOAT_RUNTIME = {
     'window_source': None
 }
 
+def normalize_iso_date(value):
+    if not value:
+        return None
+    try:
+        datetime.strptime(value, '%Y-%m-%d')
+    except (TypeError, ValueError):
+        raise ValueError('Date must use YYYY-MM-DD format.')
+    return value
+
+def normalize_habit_name(data):
+    if not isinstance(data, dict):
+        raise ValueError('A JSON request body is required.')
+
+    name = ' '.join(str(data.get('name') or '').split())
+    if not name:
+        raise ValueError('Routine name is required.')
+    if len(name) > 100:
+        raise ValueError('Routine name must be 100 characters or fewer.')
+    return name
+
 def desktop_float_runtime_snapshot():
     with DESKTOP_FLOAT_RUNTIME_LOCK:
         return {
@@ -249,6 +269,14 @@ def parse_schedule_payload(data, existing=None):
 
     return plan_date, session_type, label, start_time, end_time
 
+def schedule_json_payload():
+    data = request.get_json(silent=True)
+    if data is None:
+        return {}
+    if not isinstance(data, dict):
+        raise ValueError('Request body must be a JSON object.')
+    return data
+
 @app.route('/api/schedule', methods=['GET', 'POST', 'DELETE'])
 def schedule_collection():
     if request.method == 'GET':
@@ -276,8 +304,8 @@ def schedule_collection():
             "deleted_count": deleted_count
         })
 
-    data = request.get_json(silent=True) or {}
     try:
+        data = schedule_json_payload()
         payload = parse_schedule_payload(data)
         session = database.add_schedule_session(*payload)
     except ValueError as error:
@@ -315,19 +343,26 @@ def normalize_schedule_batch(plan_date, raw_sessions):
             raise ValueError('Generated sessions overlap each other.')
     return normalized_sessions
 
+def normalize_replace_existing(data):
+    replace_existing = data.get('replace_existing', False)
+    if not isinstance(replace_existing, bool):
+        raise ValueError('replace_existing must be true or false.')
+    return replace_existing
+
 @app.route('/api/schedule/bulk', methods=['POST'])
 def schedule_bulk_replace():
-    data = request.get_json(silent=True) or {}
     try:
+        data = schedule_json_payload()
         plan_date = normalize_iso_date(data.get('plan_date'))
         if not plan_date:
             raise ValueError('Plan date is required.')
         sessions = normalize_schedule_batch(plan_date, data.get('sessions'))
+        replace_existing = normalize_replace_existing(data)
     except ValueError as error:
         return jsonify({"status": "error", "message": str(error)}), 400
 
     existing_sessions = database.get_schedule_sessions(plan_date)
-    if existing_sessions and not bool(data.get('replace_existing')):
+    if existing_sessions and not replace_existing:
         return jsonify({
             "status": "error",
             "message": "This day already has a plan. Confirm replacement first."
@@ -341,14 +376,15 @@ def schedule_bulk_replace():
 
 @app.route('/api/schedule/copy', methods=['POST'])
 def schedule_copy_day():
-    data = request.get_json(silent=True) or {}
     try:
+        data = schedule_json_payload()
         source_date = normalize_iso_date(data.get('source_date'))
         target_date = normalize_iso_date(data.get('target_date'))
         if not source_date or not target_date:
             raise ValueError('Source and target dates are required.')
         if source_date == target_date:
             raise ValueError('Choose two different days.')
+        replace_existing = normalize_replace_existing(data)
     except ValueError as error:
         return jsonify({"status": "error", "message": str(error)}), 400
 
@@ -360,7 +396,7 @@ def schedule_copy_day():
         }), 400
 
     target_sessions = database.get_schedule_sessions(target_date)
-    if target_sessions and not bool(data.get('replace_existing')):
+    if target_sessions and not replace_existing:
         return jsonify({
             "status": "error",
             "message": "The target day already has a plan. Confirm replacement first."
@@ -382,16 +418,22 @@ def schedule_detail(session_id):
         return jsonify({"status": "error", "message": "Session not found."}), 404
 
     if request.method == 'DELETE':
-        database.delete_schedule_session(session_id)
+        if not database.delete_schedule_session(session_id):
+            return jsonify({
+                "status": "error",
+                "message": "Session not found."
+            }), 404
         return jsonify({"status": "success"})
 
-    data = request.get_json(silent=True) or {}
     try:
+        data = schedule_json_payload()
         payload = parse_schedule_payload(data, existing)
         session = database.edit_schedule_session(session_id, *payload)
     except ValueError as error:
         return jsonify({"status": "error", "message": str(error)}), 400
 
+    if not session:
+        return jsonify({"status": "error", "message": "Session not found."}), 404
     return jsonify({"status": "success", "session": session})
 
 @app.route('/api/schedule/status', methods=['GET'])
@@ -571,9 +613,16 @@ def desktop_floating_setting():
 @app.route('/api/habits', methods=['GET', 'POST'])
 def handle_habits():
     if request.method == 'POST':
-        data = request.get_json()
-        database.add_habit(data.get('name'))
-        return jsonify({"status": "success"})
+        try:
+            name = normalize_habit_name(request.get_json(silent=True))
+        except ValueError as error:
+            return jsonify({"status": "error", "message": str(error)}), 400
+
+        habit_id = database.add_habit(name)
+        return jsonify({
+            "status": "success",
+            "habit": {"id": habit_id, "name": name}
+        }), 201
     return jsonify(database.get_today_habits())
 
 @app.route('/api/habits/report', methods=['GET'])
@@ -583,19 +632,46 @@ def get_habit_report():
 
 @app.route('/api/habits/toggle', methods=['POST'])
 def toggle_habit():
-    data = request.get_json()
-    database.toggle_habit(data.get('habit_id'))
-    return jsonify({"status": "success"})
+    data = request.get_json(silent=True) or {}
+    try:
+        habit_id = int(data.get('habit_id'))
+        if habit_id < 1:
+            raise ValueError
+    except (TypeError, ValueError):
+        return jsonify({
+            "status": "error",
+            "message": "A valid routine ID is required."
+        }), 400
+
+    completed = database.toggle_habit(habit_id)
+    if completed is None:
+        return jsonify({
+            "status": "error",
+            "message": "Routine not found."
+        }), 404
+    return jsonify({"status": "success", "completed": completed})
 
 @app.route('/api/habits/<int:habit_id>', methods=['PUT'])
 def update_habit(habit_id):
-    data = request.get_json()
-    database.edit_habit(habit_id, data.get('name'))
+    try:
+        name = normalize_habit_name(request.get_json(silent=True))
+    except ValueError as error:
+        return jsonify({"status": "error", "message": str(error)}), 400
+
+    if not database.edit_habit(habit_id, name):
+        return jsonify({
+            "status": "error",
+            "message": "Routine not found."
+        }), 404
     return jsonify({"status": "success"})
 
 @app.route('/api/habits/<int:habit_id>', methods=['DELETE'])
 def delete_habit_route(habit_id):
-    database.delete_habit(habit_id)
+    if not database.delete_habit(habit_id):
+        return jsonify({
+            "status": "error",
+            "message": "Routine not found."
+        }), 404
     return jsonify({"status": "success"})
 
 # --- TASK API ROUTES ---
@@ -632,15 +708,6 @@ def update_task_route(task_id):
     return jsonify({"status": "success"})
 
 # --- GOAL API ROUTES ---
-def normalize_iso_date(value):
-    if not value:
-        return None
-    try:
-        datetime.strptime(value, '%Y-%m-%d')
-    except (TypeError, ValueError):
-        raise ValueError('Date must use YYYY-MM-DD format.')
-    return value
-
 @app.route('/api/goals', methods=['GET', 'POST'])
 def handle_goals():
     if request.method == 'GET':

@@ -175,9 +175,14 @@ async function submitLog() {
 
 function showStatusMessage(message, type = 'success') {
     const statusMsg = document.getElementById('status-msg');
-    
+    if (!statusMsg) return;
+
+    if (window.statusMsgTimeout) clearTimeout(window.statusMsgTimeout);
+    if (window.statusMsgHideTimeout) clearTimeout(window.statusMsgHideTimeout);
+
     statusMsg.className = 'text-center text-sm font-bold mt-4 transition-all duration-300 transform translate-y-0 opacity-100';
-    
+    statusMsg.classList.remove('hidden');
+
     if (type === 'success') {
         statusMsg.classList.add('text-emerald-700');
     } else {
@@ -185,13 +190,13 @@ function showStatusMessage(message, type = 'success') {
     }
 
     statusMsg.innerText = message;
-    
-    if (window.statusMsgTimeout) clearTimeout(window.statusMsgTimeout);
 
     window.statusMsgTimeout = setTimeout(() => {
         statusMsg.classList.replace('opacity-100', 'opacity-0');
         statusMsg.classList.replace('translate-y-0', 'translate-y-2');
-        setTimeout(() => statusMsg.classList.add('hidden'), 300);
+        window.statusMsgHideTimeout = setTimeout(() => {
+            statusMsg.classList.add('hidden');
+        }, 300);
     }, 3500);
 }
 

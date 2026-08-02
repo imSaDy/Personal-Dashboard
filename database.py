@@ -8,9 +8,20 @@ DB_FILE = os.environ.get(
     os.path.join(PROJECT_ROOT, 'database.db')
 )
 
+TIMEFRAME_WINDOWS = {
+    'daily': ('0 days', '-1 days'),
+    'weekly': ('-7 days', '-14 days'),
+    'monthly': ('-30 days', '-60 days'),
+    'yearly': ('-365 days', '-730 days')
+}
+
+def normalize_timeframe(timeframe):
+    return timeframe if timeframe in TIMEFRAME_WINDOWS else 'weekly'
+
 def get_connection():
-    conn = sqlite3.connect(DB_FILE)
-    conn.row_factory = sqlite3.Row 
+    conn = sqlite3.connect(DB_FILE, timeout=5)
+    conn.row_factory = sqlite3.Row
+    conn.execute('PRAGMA busy_timeout = 5000')
     return conn
 
 # --- UNIFIED DATABASE INITIALIZATION ---
@@ -45,9 +56,25 @@ def init_db():
     
     conn.execute('''
         CREATE TABLE IF NOT EXISTS habit_logs (
-            habit_id INTEGER,
-            log_date DATE DEFAULT (date('now', 'localtime'))
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            habit_id INTEGER NOT NULL,
+            log_date DATE NOT NULL DEFAULT (date('now', 'localtime')),
+            UNIQUE (habit_id, log_date)
         )
+    ''')
+    # Older releases allowed duplicate completions for the same routine/day.
+    # Keep one valid completion before enforcing uniqueness for existing installs.
+    conn.execute('''
+        DELETE FROM habit_logs
+        WHERE rowid NOT IN (
+            SELECT MIN(rowid)
+            FROM habit_logs
+            GROUP BY habit_id, log_date
+        )
+    ''')
+    conn.execute('''
+        CREATE UNIQUE INDEX IF NOT EXISTS idx_habit_logs_habit_date_unique
+        ON habit_logs (habit_id, log_date)
     ''')
 
     conn.execute('''
@@ -143,25 +170,22 @@ def set_boolean_setting(setting_key, enabled):
 # --- DASHBOARD SUMMARY METRICS ---
 def get_dashboard_metrics(timeframe='weekly'):
     conn = get_connection()
-    
-    # FIXED: '0 days' locks it exactly to midnight today, no rolling hours.
-    if timeframe == 'daily':
-        date_mod = '0 days'
-        prev_mod = '-1 days'
-    elif timeframe == 'monthly':
-        date_mod = '-30 days'
-        prev_mod = '-60 days'
-    elif timeframe == 'yearly':
-        date_mod = '-365 days'
-        prev_mod = '-730 days'
-    else: 
-        date_mod = '-7 days'
-        prev_mod = '-14 days'
 
-    cursor = conn.execute(f"SELECT SUM(hours) as total FROM time_logs WHERE date >= date('now', '{date_mod}', 'localtime')")
+    timeframe = normalize_timeframe(timeframe)
+    date_mod, prev_mod = TIMEFRAME_WINDOWS[timeframe]
+
+    cursor = conn.execute(
+        "SELECT SUM(hours) as total FROM time_logs WHERE date >= date('now', ?, 'localtime')",
+        (date_mod,)
+    )
     current_hours = cursor.fetchone()['total'] or 0.0
 
-    cursor = conn.execute(f"SELECT SUM(hours) as total FROM time_logs WHERE date >= date('now', '{prev_mod}', 'localtime') AND date < date('now', '{date_mod}', 'localtime')")
+    cursor = conn.execute('''
+        SELECT SUM(hours) as total
+        FROM time_logs
+        WHERE date >= date('now', ?, 'localtime')
+          AND date < date('now', ?, 'localtime')
+    ''', (prev_mod, date_mod))
     prev_hours = cursor.fetchone()['total'] or 0.0
 
     trend = 0
@@ -241,21 +265,19 @@ def get_activity_suggestions(limit=30):
 
 def get_activity_totals(timeframe='weekly'):
     conn = get_connection()
-    
-    # 1. Raw totals for Bar and Doughnut charts
-    if timeframe == 'daily': date_mod = '0 days' 
-    elif timeframe == 'monthly': date_mod = '-30 days'
-    elif timeframe == 'yearly': date_mod = '-365 days'
-    else: date_mod = '-7 days'
 
-    cursor = conn.execute(f'''
+    timeframe = normalize_timeframe(timeframe)
+    date_mod, _ = TIMEFRAME_WINDOWS[timeframe]
+
+    # 1. Raw totals for Bar and Doughnut charts
+    cursor = conn.execute('''
         WITH activity_groups AS (
             SELECT
                 lower(trim(activity)) AS activity_key,
                 SUM(hours) AS total_hours,
                 MAX(id) AS last_used_id
             FROM time_logs
-            WHERE date >= date('now', '{date_mod}', 'localtime')
+            WHERE date >= date('now', ?, 'localtime')
               AND trim(activity) != ''
             GROUP BY lower(trim(activity))
         )
@@ -263,12 +285,12 @@ def get_activity_totals(timeframe='weekly'):
         FROM activity_groups g
         JOIN time_logs t ON t.id = g.last_used_id
         ORDER BY g.total_hours DESC
-    ''')
+    ''', (date_mod,))
     totals = [{"activity": row["activity"], "total_hours": row["total_hours"]} for row in cursor.fetchall()]
 
     # 2. Timeline totals for the Smooth Line chart
     if timeframe == 'daily':
-        timeline_query = f'''
+        timeline_query = '''
             SELECT strftime('%H', date) as period, SUM(hours) as total_hours
             FROM time_logs
             WHERE date >= date('now', 'localtime')
@@ -276,7 +298,7 @@ def get_activity_totals(timeframe='weekly'):
             ORDER BY period ASC
         '''
     elif timeframe == 'monthly':
-        timeline_query = f'''
+        timeline_query = '''
             SELECT strftime('%Y-%W', date) as period, SUM(hours) as total_hours
             FROM time_logs
             WHERE date >= date('now', '-27 days', 'localtime')
@@ -284,7 +306,7 @@ def get_activity_totals(timeframe='weekly'):
             ORDER BY period ASC
         '''
     elif timeframe == 'yearly':
-        timeline_query = f'''
+        timeline_query = '''
             SELECT strftime('%Y-%m', date) as period, SUM(hours) as total_hours
             FROM time_logs
             WHERE date >= date('now', '-11 months', 'localtime')
@@ -292,7 +314,7 @@ def get_activity_totals(timeframe='weekly'):
             ORDER BY period ASC
         '''
     else: 
-        timeline_query = f'''
+        timeline_query = '''
             SELECT date(date) as period, SUM(hours) as total_hours
             FROM time_logs
             WHERE date >= date('now', '-6 days', 'localtime')
@@ -412,8 +434,13 @@ def get_schedule_session(session_id):
     conn.close()
     return _serialize_schedule_session(row) if row else None
 
-def schedule_session_overlaps(plan_date, start_time, end_time, exclude_id=None):
-    conn = get_connection()
+def _schedule_session_overlaps(
+    conn,
+    plan_date,
+    start_time,
+    end_time,
+    exclude_id=None
+):
     parameters = [plan_date, end_time, start_time]
     exclude_clause = ''
     if exclude_id is not None:
@@ -429,28 +456,49 @@ def schedule_session_overlaps(plan_date, start_time, end_time, exclude_id=None):
           {exclude_clause}
         LIMIT 1
     ''', parameters)
-    overlaps = cursor.fetchone() is not None
-    conn.close()
-    return overlaps
+    return cursor.fetchone() is not None
+
+def schedule_session_overlaps(plan_date, start_time, end_time, exclude_id=None):
+    conn = get_connection()
+    try:
+        return _schedule_session_overlaps(
+            conn,
+            plan_date,
+            start_time,
+            end_time,
+            exclude_id
+        )
+    finally:
+        conn.close()
 
 def add_schedule_session(plan_date, session_type, label, start_time, end_time):
-    if schedule_session_overlaps(plan_date, start_time, end_time):
-        raise ValueError('This time overlaps another session in the plan.')
-
     conn = get_connection()
-    cursor = conn.execute('''
-        INSERT INTO day_schedule_sessions (
+    try:
+        conn.execute('BEGIN IMMEDIATE')
+        if _schedule_session_overlaps(
+            conn,
             plan_date,
-            session_type,
-            label,
             start_time,
             end_time
-        )
-        VALUES (?, ?, ?, ?, ?)
-    ''', (plan_date, session_type, label, start_time, end_time))
-    session_id = cursor.lastrowid
-    conn.commit()
-    conn.close()
+        ):
+            raise ValueError('This time overlaps another session in the plan.')
+        cursor = conn.execute('''
+            INSERT INTO day_schedule_sessions (
+                plan_date,
+                session_type,
+                label,
+                start_time,
+                end_time
+            )
+            VALUES (?, ?, ?, ?, ?)
+        ''', (plan_date, session_type, label, start_time, end_time))
+        session_id = cursor.lastrowid
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
     return get_schedule_session(session_id)
 
 def edit_schedule_session(
@@ -461,35 +509,45 @@ def edit_schedule_session(
     start_time,
     end_time
 ):
-    if schedule_session_overlaps(
-        plan_date,
-        start_time,
-        end_time,
-        exclude_id=session_id
-    ):
-        raise ValueError('This time overlaps another session in the plan.')
-
     conn = get_connection()
-    cursor = conn.execute('''
-        UPDATE day_schedule_sessions
-        SET plan_date = ?,
-            session_type = ?,
-            label = ?,
-            start_time = ?,
-            end_time = ?,
-            updated_at = CURRENT_TIMESTAMP
-        WHERE id = ?
-    ''', (
-        plan_date,
-        session_type,
-        label,
-        start_time,
-        end_time,
-        session_id
-    ))
-    conn.commit()
-    updated = cursor.rowcount > 0
-    conn.close()
+    try:
+        conn.execute('BEGIN IMMEDIATE')
+        if _schedule_session_overlaps(
+            conn,
+            plan_date,
+            start_time,
+            end_time,
+            exclude_id=session_id
+        ):
+            raise ValueError('This time overlaps another session in the plan.')
+        cursor = conn.execute('''
+            UPDATE day_schedule_sessions
+            SET plan_date = ?,
+                session_type = ?,
+                label = ?,
+                start_time = ?,
+                end_time = ?,
+                updated_at = strftime(
+                    '%Y-%m-%d %H:%M:%f',
+                    'now',
+                    'localtime'
+                )
+            WHERE id = ?
+        ''', (
+            plan_date,
+            session_type,
+            label,
+            start_time,
+            end_time,
+            session_id
+        ))
+        updated = cursor.rowcount > 0
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
     return get_schedule_session(session_id) if updated else None
 
 def delete_schedule_session(session_id):
@@ -609,32 +667,67 @@ def get_routine_report():
 
 def toggle_habit(habit_id):
     conn = get_connection()
-    cursor = conn.execute('SELECT 1 FROM habit_logs WHERE habit_id = ? AND log_date = date("now", "localtime")', (habit_id,))
-    if cursor.fetchone():
-        conn.execute('DELETE FROM habit_logs WHERE habit_id = ? AND log_date = date("now", "localtime")', (habit_id,))
-    else:
-        conn.execute('INSERT INTO habit_logs (habit_id) VALUES (?)', (habit_id,))
-    conn.commit()
-    conn.close()
+    try:
+        conn.execute('BEGIN IMMEDIATE')
+        habit = conn.execute(
+            'SELECT 1 FROM habits WHERE id = ?',
+            (habit_id,)
+        ).fetchone()
+        if not habit:
+            conn.rollback()
+            return None
+
+        completion = conn.execute('''
+            SELECT 1
+            FROM habit_logs
+            WHERE habit_id = ?
+              AND log_date = date('now', 'localtime')
+        ''', (habit_id,)).fetchone()
+        if completion:
+            conn.execute('''
+                DELETE FROM habit_logs
+                WHERE habit_id = ?
+                  AND log_date = date('now', 'localtime')
+            ''', (habit_id,))
+            completed = False
+        else:
+            conn.execute(
+                'INSERT INTO habit_logs (habit_id) VALUES (?)',
+                (habit_id,)
+            )
+            completed = True
+        conn.commit()
+        return completed
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
 
 def add_habit(name):
     conn = get_connection()
-    conn.execute('INSERT INTO habits (name) VALUES (?)', (name,))
+    cursor = conn.execute('INSERT INTO habits (name) VALUES (?)', (name,))
     conn.commit()
     conn.close()
+    return cursor.lastrowid
 
 def edit_habit(habit_id, name):
     conn = get_connection()
-    conn.execute('UPDATE habits SET name = ? WHERE id = ?', (name, habit_id))
+    cursor = conn.execute('UPDATE habits SET name = ? WHERE id = ?', (name, habit_id))
     conn.commit()
     conn.close()
+    return cursor.rowcount > 0
 
 def delete_habit(habit_id):
     conn = get_connection()
-    conn.execute('DELETE FROM habits WHERE id = ?', (habit_id,))
-    conn.execute('DELETE FROM habit_logs WHERE habit_id = ?', (habit_id,))
+    conn.execute('BEGIN IMMEDIATE')
+    cursor = conn.execute('DELETE FROM habits WHERE id = ?', (habit_id,))
+    deleted = cursor.rowcount > 0
+    if deleted:
+        conn.execute('DELETE FROM habit_logs WHERE habit_id = ?', (habit_id,))
     conn.commit()
     conn.close()
+    return deleted
 
 # --- TASK MODULE FUNCTIONS ---
 def get_all_tasks():

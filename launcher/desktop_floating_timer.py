@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import argparse
 import ctypes
+from ctypes import wintypes
+from hashlib import sha256
 import json
 import math
 import os
@@ -48,6 +50,11 @@ MODE_STYLES = {
         "fallback": "Extended recovery",
     },
 }
+WINDOWS_ALREADY_EXISTS = 183
+INSTANCE_MUTEX_NAME = (
+    "Local\\LumenFloatingTimer_"
+    + sha256(str(PROJECT_ROOT).lower().encode("utf-8")).hexdigest()[:16]
+)
 
 
 def enable_windows_dpi_awareness():
@@ -60,6 +67,45 @@ def enable_windows_dpi_awareness():
             ctypes.windll.shcore.SetProcessDpiAwareness(2)
         except (AttributeError, OSError):
             pass
+
+
+def acquire_single_instance_mutex(mutex_name=INSTANCE_MUTEX_NAME):
+    """Keep one native timer companion per Lumen installation."""
+    if os.name != "nt":
+        return None, True
+
+    kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+    create_mutex = kernel32.CreateMutexW
+    create_mutex.argtypes = [
+        ctypes.c_void_p,
+        wintypes.BOOL,
+        wintypes.LPCWSTR,
+    ]
+    create_mutex.restype = wintypes.HANDLE
+    close_handle = kernel32.CloseHandle
+    close_handle.argtypes = [wintypes.HANDLE]
+    close_handle.restype = wintypes.BOOL
+    mutex_handle = create_mutex(None, True, mutex_name)
+    if not mutex_handle:
+        return None, False
+    if ctypes.get_last_error() == WINDOWS_ALREADY_EXISTS:
+        close_handle(mutex_handle)
+        return None, False
+    return mutex_handle, True
+
+
+def release_single_instance_mutex(mutex_handle):
+    if os.name != "nt" or not mutex_handle:
+        return
+    kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+    release_mutex = kernel32.ReleaseMutex
+    release_mutex.argtypes = [wintypes.HANDLE]
+    release_mutex.restype = wintypes.BOOL
+    close_handle = kernel32.CloseHandle
+    close_handle.argtypes = [wintypes.HANDLE]
+    close_handle.restype = wintypes.BOOL
+    release_mutex(mutex_handle)
+    close_handle(mutex_handle)
 
 
 def parent_process_is_alive(parent_pid):
@@ -119,10 +165,6 @@ def session_key(status):
         for value in (
             status.get("date", ""),
             session.get("id", ""),
-            session.get("session_type", ""),
-            session.get("start_time", ""),
-            session.get("end_time", ""),
-            session.get("updated_at", ""),
         )
     )
 
@@ -732,36 +774,45 @@ def parse_arguments():
 
 def main():
     arguments = parse_arguments()
-    timer = DesktopFloatingTimer(
-        arguments.api_url,
-        arguments.parent_pid,
-    )
-
-    if arguments.probe or arguments.demo_seconds > 0:
-        visible = timer.apply_status(demo_status())
-        timer.root.update_idletasks()
-        if arguments.probe:
-            print(json.dumps({
-                "visible": visible,
-                "topmost": bool(timer.root.attributes("-topmost")),
-                "logo_loaded": timer.logo_image is not None,
-                "logo_size": [
-                    timer.logo_image.width(),
-                    timer.logo_image.height(),
-                ] if timer.logo_image else None,
-                "width": timer.root.winfo_width(),
-                "height": timer.root.winfo_height(),
-            }))
-            timer.root.destroy()
+    mutex_handle = None
+    if not arguments.probe and arguments.demo_seconds <= 0:
+        mutex_handle, acquired = acquire_single_instance_mutex()
+        if not acquired:
             return
-        timer.root.after(
-            max(250, int(arguments.demo_seconds * 1000)),
-            timer.root.destroy,
-        )
-        timer.root.mainloop()
-        return
 
-    timer.run()
+    try:
+        timer = DesktopFloatingTimer(
+            arguments.api_url,
+            arguments.parent_pid,
+        )
+
+        if arguments.probe or arguments.demo_seconds > 0:
+            visible = timer.apply_status(demo_status())
+            timer.root.update_idletasks()
+            if arguments.probe:
+                print(json.dumps({
+                    "visible": visible,
+                    "topmost": bool(timer.root.attributes("-topmost")),
+                    "logo_loaded": timer.logo_image is not None,
+                    "logo_size": [
+                        timer.logo_image.width(),
+                        timer.logo_image.height(),
+                    ] if timer.logo_image else None,
+                    "width": timer.root.winfo_width(),
+                    "height": timer.root.winfo_height(),
+                }))
+                timer.root.destroy()
+                return
+            timer.root.after(
+                max(250, int(arguments.demo_seconds * 1000)),
+                timer.root.destroy,
+            )
+            timer.root.mainloop()
+            return
+
+        timer.run()
+    finally:
+        release_single_instance_mutex(mutex_handle)
 
 
 if __name__ == "__main__":

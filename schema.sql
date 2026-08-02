@@ -21,9 +21,14 @@ CREATE TABLE IF NOT EXISTS habits (
 );
 
 CREATE TABLE IF NOT EXISTS habit_logs (
-    habit_id INTEGER,
-    log_date DATE DEFAULT (date('now', 'localtime'))
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    habit_id INTEGER NOT NULL,
+    log_date DATE NOT NULL DEFAULT (date('now', 'localtime')),
+    UNIQUE (habit_id, log_date)
 );
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_habit_logs_habit_date_unique
+ON habit_logs (habit_id, log_date);
 
 CREATE TABLE IF NOT EXISTS goals (
     id INTEGER PRIMARY KEY AUTOINCREMENT,

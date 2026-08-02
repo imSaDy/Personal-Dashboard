@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="static/lumen-icon.png" width="112" alt="Lumen logo">
+  <img src="static/lumen-header-logo.png" width="360" alt="Lumen logo">
 
   # Lumen
 
@@ -37,7 +37,7 @@ The product is built around a simple loop:
 | Area | What it does |
 | --- | --- |
 | **Today** | A focused home screen for next actions, routines, the goal of the day, and short journal check-ins. |
-| **Day Planner** | Builds a graphical focus/break timeline with precise time controls, quick generation, editing, overlap protection, and automatic timer transitions. |
+| **Day Planner** | Builds a graphical focus/break timeline with precise time controls, quick generation, reusable copy/paste plans, editing, overlap protection, and automatic timer transitions. |
 | **Focus Timer** | Runs Focus, Short Break, Long Break, and custom sessions with persistent timestamp-based state. |
 | **Native desktop timer** | Shows the active manual or planned timer in a small Windows always-on-top window outside the browser. |
 | **Performance** | Visualizes time allocation, activity mix, momentum, primary-focus share, and daily through yearly trends. |
@@ -54,7 +54,8 @@ The Windows launcher starts a lightweight Tk-based companion alongside Flask. It
 - Always on top and independent of the browser window
 - Opens automatically when an enabled Day Planner block starts
 - Can be shown or hidden from either Timer or Planner
-- Reopens the same active session after the native window is closed
+- Can reopen the same active session on demand after the native window is closed
+- Enforces one native companion window per Lumen installation
 - Displays mode, countdown, remaining progress, and the next block
 - Uses the Lumen icon and theme-aware Focus/Break colors
 - Cleans itself up when the dashboard server exits
@@ -142,7 +143,8 @@ The local executable is intentionally ignored because generated platform binarie
 
 ```powershell
 Get-ChildItem .\static\*.js | ForEach-Object { node --check $_.FullName }
-.\.venv\Scripts\python.exe -m compileall app.py database.py launcher scripts
+.\.venv\Scripts\python.exe -m compileall app.py database.py launcher scripts tests
+.\.venv\Scripts\python.exe -m unittest discover -s tests -v
 .\.venv\Scripts\python.exe .\scripts\verify_fresh_install.py
 .\.venv\Scripts\python.exe .\scripts\verify_release.py
 ```
@@ -181,6 +183,9 @@ Personal-Dashboard/
 ├── scripts/
 │   ├── verify_fresh_install.py    # Empty-database integrity check
 │   └── verify_release.py          # Pages, health, and privacy smoke test
+├── tests/
+│   ├── test_day_planner.py        # Planner API, concurrency, edit/delete tests
+│   └── test_desktop_timer.py      # Native companion single-instance tests
 ├── launcher/
 │   ├── dashboard_server.py        # Stable production-style local server entry
 │   ├── desktop_floating_timer.py  # Native Windows always-on-top timer
@@ -198,6 +203,7 @@ Personal-Dashboard/
 │   ├── charts.js                  # Performance visualizations
 │   ├── activity-autocomplete.js
 │   ├── tailwind-built.css
+│   ├── lumen-header-logo.png
 │   └── lumen-icon.png
 └── templates/
     ├── base.html
